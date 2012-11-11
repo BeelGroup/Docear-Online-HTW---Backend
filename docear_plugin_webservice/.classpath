@@ -4,5 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.6.0_35"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/docear_plugin_core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/freeplane"/>
+	<classpathentry kind="lib" path="D:/Applications/eclipse/plugins/org.eclipse.osgi_3.8.1.v20120830-144521.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
