@@ -5,6 +5,7 @@ import java.awt.Container;
 import org.freeplane.core.util.LogUtils;
 import org.freeplane.features.map.MapChangeEvent;
 import org.freeplane.features.map.MapModel;
+import org.freeplane.features.map.NodeChangeEvent;
 import org.freeplane.features.map.NodeModel;
 import org.freeplane.features.mode.ModeController;
 import org.freeplane.features.ui.INodeViewLifeCycleListener;
@@ -43,8 +44,17 @@ public class WebserviceController {
 //					AFreeplaneAction action = modeController.getAction("NewChildAction");
 //					action.actionPerformed(null);
 
+					node.setUserObject("3 Seconds to deletion");
+					node.fireNodeChanged(new NodeChangeEvent(node, "userObject", "blub", "bla"));
+					modeController.getMapController().fireMapChanged(new MapChangeEvent(this, node, null, node));
+					try {Thread.sleep(1000);} catch(Throwable t) {}
 					
-					try {Thread.sleep(3000);} catch(Throwable t) {}
+					node.setUserObject("2 Seconds to deletion");
+					node.fireNodeChanged(new NodeChangeEvent(node, "userObject", "blub", "bla"));
+					try {Thread.sleep(1000);} catch(Throwable t) {}
+					node.setUserObject("1 Seconds to deletion");
+					node.fireNodeChanged(new NodeChangeEvent(node, "userObject", "blub", "bla"));
+					try {Thread.sleep(1000);} catch(Throwable t) {}
 					
 					node.removeFromParent();
 					modeController.getMapController().fireMapChanged(new MapChangeEvent(this, node, null, node));
