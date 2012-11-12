@@ -6,7 +6,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@Path("map")
+@Path("/map")
 public class Webservice {
 
 	@GET
@@ -22,7 +22,7 @@ public class Webservice {
 	public String search(@PathParam("mapId") Long mapId, @PathParam("query") String query) {
 		return String.format("mapId = %s, searchString = %s", mapId, query);
 	}
-
+	
 	@XmlRootElement
 	static class MapModel {
 		public String name;
