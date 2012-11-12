@@ -15,8 +15,7 @@ public class Activator extends DocearService implements BundleActivator {
 	}
 
 	public void startService(BundleContext context, ModeController modeController) {
-		new WebserviceController(modeController);
-//		new OptionPaneConfiguration(modeController);
+			new WebserviceController(modeController);
 	}
 
 	protected Collection<IControllerExtensionProvider> getControllerExtensions() {

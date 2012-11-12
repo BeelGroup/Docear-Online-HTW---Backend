@@ -1,6 +1,7 @@
 package org.docear.plugin.webservice;
 
 import java.awt.Container;
+import java.io.IOException;
 
 import org.freeplane.core.util.LogUtils;
 import org.freeplane.features.map.MapChangeEvent;
@@ -9,6 +10,10 @@ import org.freeplane.features.map.NodeChangeEvent;
 import org.freeplane.features.map.NodeModel;
 import org.freeplane.features.mode.ModeController;
 import org.freeplane.features.ui.INodeViewLifeCycleListener;
+
+import com.sun.jersey.api.container.httpserver.HttpServerFactory;
+import com.sun.jersey.api.core.ResourceConfig;
+import com.sun.net.httpserver.HttpServer;
 
 public class WebserviceController {
 
@@ -22,19 +27,29 @@ public class WebserviceController {
 		this.modeController = modeController;
 		LogUtils.info("starting Webservice Plugin...");
 
+		
+		HttpServer server;
+		try {
+			server = HttpServerFactory.create( "http://localhost:8080/rest" );
+			server.start();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+
+		
 		this.registerListeners();
 
 		new Thread(new Runnable() {
 
 			@Override
 			public void run() {
-
-				try {
-					Thread.sleep(10000);
-					} catch(Throwable t) {
-						
-					}
+					
+				
 				while(true) {
+					
 					MapModel mm = modeController.getMapController().getRootNode().getMap();
 					NodeModel root = modeController.getMapController().getRootNode();
 					modeController.getMapController().select(modeController.getMapController().getRootNode());
@@ -62,7 +77,7 @@ public class WebserviceController {
 					
 				}
 			}
-		}).start();
+		});
 
 	}
 
