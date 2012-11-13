@@ -8,6 +8,7 @@ import javax.xml.ws.Endpoint;
 import javax.xml.ws.WebServiceException;
 
 import org.docear.plugin.webservice.model.MapModel;
+import org.docear.plugin.webservice.model.RootNode;
 import org.freeplane.features.map.MapChangeEvent;
 import org.freeplane.features.map.NodeChangeEvent;
 import org.freeplane.features.map.NodeModel;
@@ -27,8 +28,11 @@ public class SyncServer implements SyncService, Closeable {
 		MapModel mm = new MapModel();
 		org.freeplane.features.map.MapModel freeplaneMm =  modeController.getController().getMap();
 		mm.id = freeplaneMm.getTitle();
+		NodeModel rootNodeFreeplane = modeController.getMapController().getRootNode();
+		mm.root = new RootNode(rootNodeFreeplane);
 		
-		return new MapModel();
+		
+		return mm;
 	}
 	
 	public SyncServer(final String binding, final URI serviceURI, ModeController modeController) {

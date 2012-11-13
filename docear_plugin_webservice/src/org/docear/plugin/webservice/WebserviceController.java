@@ -8,11 +8,9 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.ws.soap.SOAPBinding;
 
+import org.docear.plugin.webservice.rest.Webservice;
 import org.freeplane.core.util.LogUtils;
 import org.freeplane.features.map.MapChangeEvent;
 import org.freeplane.features.map.MapModel;
@@ -21,6 +19,11 @@ import org.freeplane.features.map.NodeModel;
 import org.freeplane.features.mode.ModeController;
 import org.freeplane.features.ui.INodeViewLifeCycleListener;
 import org.osgi.framework.BundleContext;
+
+import com.sun.jersey.api.container.httpserver.HttpServerFactory;
+import com.sun.jersey.api.core.PackagesResourceConfig;
+import com.sun.jersey.api.core.ResourceConfig;
+import com.sun.net.httpserver.HttpServer;
 
 
 
@@ -47,7 +50,10 @@ public class WebserviceController {
 //		try {
 			//final ServerSocket ss = new ServerSocket(8080);
 			
-//			HttpServer server = HttpServerFactory.create( "http://localhost:8080/rest" );
+//			ResourceConfig rc = new PackagesResourceConfig("org.docear.plugin.webservices.rest");
+//			HttpServer server = HttpServerFactory.create( "http://localhost:8080/rest",rc );
+			
+			
 //			server.start();
 			
 

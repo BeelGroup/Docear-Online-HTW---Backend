@@ -1,4 +1,4 @@
-package org.docear.plugin.webservice;
+package org.docear.plugin.webservice.rest;
 
 import java.util.ArrayList;
 

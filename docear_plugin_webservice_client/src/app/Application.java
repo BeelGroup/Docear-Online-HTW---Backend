@@ -37,6 +37,7 @@ public class Application {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				MapModel mm = proxy.getMapObject("blub");
+				
 				System.out.println(mm);
 			}
 		});
