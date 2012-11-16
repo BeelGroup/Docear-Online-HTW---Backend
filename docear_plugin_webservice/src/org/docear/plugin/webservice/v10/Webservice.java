@@ -1,4 +1,4 @@
-package org.docear.plugin.webservice.rest;
+package org.docear.plugin.webservice.v10;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -7,14 +7,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.docear.plugin.webservice.WebserviceController;
-import org.docear.plugin.webservice.model.MapModel;
-import org.docear.plugin.webservice.model.RootNode;
+import org.docear.plugin.webservice.v10.model.MapModel;
+import org.docear.plugin.webservice.v10.model.RootNodeModel;
 import org.freeplane.features.map.MapChangeEvent;
 import org.freeplane.features.map.NodeChangeEvent;
 import org.freeplane.features.map.NodeModel;
 import org.freeplane.features.mode.ModeController;
 
-@Path("/map")
+@Path("/v1")
 public class Webservice {
 
 	
@@ -23,13 +23,8 @@ public class Webservice {
 	@Produces({ MediaType.APPLICATION_JSON })
 	public MapModel getMapModel() {
 		ModeController modeController = WebserviceController.getInstance().getModeController();
-		MapModel mm = new MapModel();
-		org.freeplane.features.map.MapModel freeplaneMm =  modeController.getController().getMap();
-		mm.id = freeplaneMm.getTitle();
-		NodeModel rootNodeFreeplane = modeController.getMapController().getRootNode();
-		mm.root = new RootNode(rootNodeFreeplane);
-		
-		
+		MapModel mm = new MapModel(modeController.getController().getMap());
+
 		return mm;
 	}
 

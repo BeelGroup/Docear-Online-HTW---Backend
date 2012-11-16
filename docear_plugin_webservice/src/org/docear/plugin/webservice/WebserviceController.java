@@ -1,22 +1,13 @@
 package org.docear.plugin.webservice;
 
 import java.awt.Container;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.Socket;
-import java.net.URI;
-import java.net.URISyntaxException;
 
-import javax.xml.ws.soap.SOAPBinding;
-
-import org.docear.plugin.webservice.model.EdgeModel;
-import org.docear.plugin.webservice.model.RootNode;
-import org.docear.plugin.webservice.rest.Webservice;
+import org.docear.plugin.webservice.v10.Webservice;
+import org.docear.plugin.webservice.v10.model.EdgeModel;
+import org.docear.plugin.webservice.v10.model.RootNodeModel;
 import org.freeplane.core.util.LogUtils;
-import org.freeplane.features.map.MapChangeEvent;
 import org.freeplane.features.map.MapModel;
-import org.freeplane.features.map.NodeChangeEvent;
 import org.freeplane.features.map.NodeModel;
 import org.freeplane.features.mode.ModeController;
 import org.freeplane.features.ui.INodeViewLifeCycleListener;
@@ -24,7 +15,6 @@ import org.osgi.framework.BundleContext;
 
 import com.sun.jersey.api.container.httpserver.HttpServerFactory;
 import com.sun.jersey.api.core.ClassNamesResourceConfig;
-import com.sun.jersey.api.core.PackagesResourceConfig;
 import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.net.httpserver.HttpServer;
 
@@ -56,7 +46,7 @@ public class WebserviceController {
 					Webservice.class,
 					MapModel.class,
 					NodeModel.class,
-					RootNode.class,
+					RootNodeModel.class,
 					EdgeModel.class
 					);
 			
