@@ -1,19 +1,36 @@
 package org.docear.plugin.webservice.rest;
 
-import java.util.ArrayList;
-
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.xml.bind.annotation.XmlRootElement;
+
+import org.docear.plugin.webservice.WebserviceController;
+import org.docear.plugin.webservice.model.MapModel;
+import org.docear.plugin.webservice.model.RootNode;
+import org.freeplane.features.map.MapChangeEvent;
+import org.freeplane.features.map.NodeChangeEvent;
+import org.freeplane.features.map.NodeModel;
+import org.freeplane.features.mode.ModeController;
 
 @Path("/map")
 public class Webservice {
 
+	
 	@GET
-	@Path("getMapName")
+	@Path("getMapModel")
 	@Produces({ MediaType.APPLICATION_JSON })
-	public MapModel getMapName() {
-		return new MapModel();
+	public MapModel getMapModel() {
+		ModeController modeController = WebserviceController.getInstance().getModeController();
+		MapModel mm = new MapModel();
+		org.freeplane.features.map.MapModel freeplaneMm =  modeController.getController().getMap();
+		mm.id = freeplaneMm.getTitle();
+		NodeModel rootNodeFreeplane = modeController.getMapController().getRootNode();
+		mm.root = new RootNode(rootNodeFreeplane);
+		
+		
+		return mm;
 	}
 
 	@GET
@@ -22,19 +39,79 @@ public class Webservice {
 	public String search(@PathParam("mapId") Long mapId, @PathParam("query") String query) {
 		return String.format("mapId = %s, searchString = %s", mapId, query);
 	}
-	
-	@XmlRootElement
-	static class MapModel {
-		public String name;
-		public java.util.List<String> children;
 
-		public MapModel() {
-			this.name = "AAA";
-			this.children = new ArrayList<String>();
-			this.children.add("asda1");
-			this.children.add("asda2");
-			this.children.add("asda3");
-		}
+	@GET
+	@Path("addNodeToRootNode")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public String addNodeToRootNode(@PathParam("text")String text) {
+		ModeController modeController = WebserviceController.getInstance().getModeController();
+		org.freeplane.features.map.MapModel mm = modeController.getMapController().getRootNode().getMap();
+		NodeModel root = modeController.getMapController().getRootNode();
+		NodeModel node = modeController.getMapController().newNode("Sample Text", mm);
+		root.insert(node);
+		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, "node", "", ""));
+		node.createID();
+		return node.getID();
+	}
+
+	@GET
+	@Path("addNodeToSelectedNode")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public String addNodeToSelectedNode(@PathParam("text")String text) {
+		ModeController modeController = WebserviceController.getInstance().getModeController();
+		org.freeplane.features.map.MapModel mm = modeController.getMapController().getRootNode().getMap();
+		NodeModel selectedNode = modeController.getMapController().getSelectedNodes().iterator().next();
+		NodeModel node = modeController.getMapController().newNode("Sample Text", mm);
+		selectedNode.insert(node);
+		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, "node", "", ""));
+		node.createID();
+		return node.getID();
+	}
+
+	@GET
+	@Path("removeNode")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Boolean removeNode(@PathParam("id")String id) {
+		ModeController modeController = WebserviceController.getInstance().getModeController();
+		NodeModel node = modeController.getMapController().getNodeFromID(id);
+		node.removeFromParent();
+		node.fireNodeChanged(new NodeChangeEvent(node, "parent", "", ""));
+		return true;
+	}
+	
+	@GET
+	@Path("sampleNode")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Boolean sampleNode() {
+		ModeController modeController = WebserviceController.getInstance().getModeController();
+		
+		
+
+		org.freeplane.features.map.MapModel mm = modeController.getMapController().getRootNode().getMap();
+		NodeModel root = modeController.getMapController().getRootNode();
+		modeController.getMapController().select(modeController.getMapController().getRootNode());
+		NodeModel node = modeController.getMapController().newNode("Sample Text", mm);
+		modeController.getMapController().insertNodeIntoWithoutUndo(node, root);
+		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, node, null, node));
+		//					AFreeplaneAction action = modeController.getAction("NewChildAction");
+		//					action.actionPerformed(null);
+
+		node.setUserObject("3 Seconds to deletion");
+		node.fireNodeChanged(new NodeChangeEvent(node, "userObject", "blub", "bla"));
+		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, node, null, node));
+		try {Thread.sleep(1000);} catch(Throwable t) {}
+
+		node.setUserObject("2 Seconds to deletion");
+		node.fireNodeChanged(new NodeChangeEvent(node, "userObject", "blub", "bla"));
+		try {Thread.sleep(1000);} catch(Throwable t) {}
+		node.setUserObject("1 Seconds to deletion");
+		node.fireNodeChanged(new NodeChangeEvent(node, "userObject", "blub", "bla"));
+		try {Thread.sleep(1000);} catch(Throwable t) {}
+
+		node.removeFromParent();
+		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, node, null, node));
+		try {Thread.sleep(3000);} catch(Throwable t) {}		
+		return Boolean.TRUE;
 	}
 
 }

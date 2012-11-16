@@ -10,6 +10,8 @@ import java.net.URISyntaxException;
 
 import javax.xml.ws.soap.SOAPBinding;
 
+import org.docear.plugin.webservice.model.EdgeModel;
+import org.docear.plugin.webservice.model.RootNode;
 import org.docear.plugin.webservice.rest.Webservice;
 import org.freeplane.core.util.LogUtils;
 import org.freeplane.features.map.MapChangeEvent;
@@ -21,6 +23,7 @@ import org.freeplane.features.ui.INodeViewLifeCycleListener;
 import org.osgi.framework.BundleContext;
 
 import com.sun.jersey.api.container.httpserver.HttpServerFactory;
+import com.sun.jersey.api.core.ClassNamesResourceConfig;
 import com.sun.jersey.api.core.PackagesResourceConfig;
 import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.net.httpserver.HttpServer;
@@ -30,8 +33,11 @@ import com.sun.net.httpserver.HttpServer;
 public class WebserviceController {
 
 	private static WebserviceController webserviceController;	
-
 	private final ModeController modeController;
+	
+	public static WebserviceController getInstance() {
+		return webserviceController;
+	}
 
 	WebserviceController(final ModeController modeController, BundleContext context) {
 		super();
@@ -39,96 +45,36 @@ public class WebserviceController {
 		this.modeController = modeController;
 		LogUtils.info("starting Webservice Plugin...");
 	    
+		this.registerListeners();
+		
+		//change class loader
+		final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(WebserviceController.class.getClassLoader());
+		
 		try {
-			final URI serviceURI = new URI("http", null,"localhost", 8000, "/" + "SyncService", null, null);
-			SyncServer server = new SyncServer(SOAPBinding.SOAP11HTTP_BINDING, serviceURI, modeController);
+			ResourceConfig rc = new ClassNamesResourceConfig(
+					Webservice.class,
+					MapModel.class,
+					NodeModel.class,
+					RootNode.class,
+					EdgeModel.class
+					);
 			
-		} catch (URISyntaxException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			HttpServer server = HttpServerFactory.create( "http://localhost:8080/rest",rc );
+			
+			server.start();
+		} catch (IOException e) {} 
+		finally {
+			//set back to original class loader
+			Thread.currentThread().setContextClassLoader(contextClassLoader);
 		}
-//		try {
-			//final ServerSocket ss = new ServerSocket(8080);
-			
-//			ResourceConfig rc = new PackagesResourceConfig("org.docear.plugin.webservices.rest");
-//			HttpServer server = HttpServerFactory.create( "http://localhost:8080/rest",rc );
-			
-			
-//			server.start();
-			
-
-			this.registerListeners();
-
-			new Thread(new Runnable() {
-
-				@Override
-				public void run() {
-					
-
-					while(true) {
-						try {
-							Webservice svc = null;
-							Socket s = null;//ss.accept();
-							
-							BufferedReader br = new BufferedReader(new InputStreamReader( s.getInputStream()));
-							//BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
-							
-							String firstLine = br.readLine();
-
-//							if(firstLine.contains("getMapName")) {
-//								try {
-//									JAXBContext jc =  JAXBContext.newInstance(org.docear.plugin.webservice.Webservice.MapModel.class);
-//									org.docear.plugin.webservice.Webservice.MapModel model =  svc.getMapName();
-//									Marshaller m = jc.createMarshaller();
-//									m.marshal(model, s.getOutputStream());
-//									s.close();
-//
-//								} catch (JAXBException e) {
-//									// TODO Auto-generated catch block
-//									e.printStackTrace();
-//								} 
-//
-//							}
-							MapModel mm = modeController.getMapController().getRootNode().getMap();
-							NodeModel root = modeController.getMapController().getRootNode();
-							modeController.getMapController().select(modeController.getMapController().getRootNode());
-							NodeModel node = modeController.getMapController().newNode("Sample Text", mm);
-							modeController.getMapController().insertNodeIntoWithoutUndo(node, root);
-							modeController.getMapController().fireMapChanged(new MapChangeEvent(this, node, null, node));
-							//					AFreeplaneAction action = modeController.getAction("NewChildAction");
-							//					action.actionPerformed(null);
-
-							node.setUserObject("3 Seconds to deletion");
-							node.fireNodeChanged(new NodeChangeEvent(node, "userObject", "blub", "bla"));
-							modeController.getMapController().fireMapChanged(new MapChangeEvent(this, node, null, node));
-							try {Thread.sleep(1000);} catch(Throwable t) {}
-
-							node.setUserObject("2 Seconds to deletion");
-							node.fireNodeChanged(new NodeChangeEvent(node, "userObject", "blub", "bla"));
-							try {Thread.sleep(1000);} catch(Throwable t) {}
-							node.setUserObject("1 Seconds to deletion");
-							node.fireNodeChanged(new NodeChangeEvent(node, "userObject", "blub", "bla"));
-							try {Thread.sleep(1000);} catch(Throwable t) {}
-
-							node.removeFromParent();
-							modeController.getMapController().fireMapChanged(new MapChangeEvent(this, node, null, node));
-							try {Thread.sleep(3000);} catch(Throwable t) {}
-
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				}
-			});
-
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 
 	}
 
+	/**
+	 * registers all listeners to react on necessary events like created nodes
+	 * Might belong into a new plugin, which sends changes to the server (And this IS the server)
+	 */
 	private void registerListeners() {
 		modeController.addINodeViewLifeCycleListener(new INodeViewLifeCycleListener() {
 
@@ -143,8 +89,9 @@ public class WebserviceController {
 		});
 	}
 
-	public WebserviceController getInstance() {
-		return webserviceController;
+
+	public ModeController getModeController() {
+		return modeController;
 	}
 
 }
