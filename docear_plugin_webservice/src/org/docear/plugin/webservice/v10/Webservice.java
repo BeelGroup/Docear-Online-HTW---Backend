@@ -3,6 +3,7 @@ package org.docear.plugin.webservice.v10;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
@@ -48,6 +49,21 @@ public class Webservice {
 		node.createID();
 		return node.getID();
 	}
+	
+	@GET
+	@Path("addNodeToRootNode/query")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public String addNodeToRootNodeQuery(@QueryParam("text")String text) {
+		ModeController modeController = WebserviceController.getInstance().getModeController();
+		org.freeplane.features.map.MapModel mm = modeController.getMapController().getRootNode().getMap();
+		NodeModel root = modeController.getMapController().getRootNode();
+		if (text == null) text = "New Node.";
+		NodeModel node = modeController.getMapController().newNode(text, mm);
+		root.insert(node);
+		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, "node", "", ""));
+		node.createID();
+		return node.getID();
+	}
 
 	@GET
 	@Path("addNodeToSelectedNode")
@@ -57,6 +73,21 @@ public class Webservice {
 		org.freeplane.features.map.MapModel mm = modeController.getMapController().getRootNode().getMap();
 		NodeModel selectedNode = modeController.getMapController().getSelectedNodes().iterator().next();
 		NodeModel node = modeController.getMapController().newNode("Sample Text", mm);
+		selectedNode.insert(node);
+		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, "node", "", ""));
+		node.createID();
+		return node.getID();
+	}
+	
+	@GET
+	@Path("addNodeToSelectedNode/query")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public String addNodeToSelectedNodeQuery(@QueryParam("text")String text) {
+		ModeController modeController = WebserviceController.getInstance().getModeController();
+		org.freeplane.features.map.MapModel mm = modeController.getMapController().getRootNode().getMap();
+		NodeModel selectedNode = modeController.getMapController().getSelectedNodes().iterator().next();
+		if (text == null) text = "New Node.";
+		NodeModel node = modeController.getMapController().newNode(text, mm);
 		selectedNode.insert(node);
 		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, "node", "", ""));
 		node.createID();
