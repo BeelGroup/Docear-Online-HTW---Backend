@@ -1,15 +1,16 @@
 package org.docear.plugin.webservice.v10;
 
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.docear.plugin.webservice.WebserviceController;
 import org.docear.plugin.webservice.v10.model.MapModel;
-import org.docear.plugin.webservice.v10.model.RootNodeModel;
 import org.freeplane.features.map.MapChangeEvent;
 import org.freeplane.features.map.NodeChangeEvent;
 import org.freeplane.features.map.NodeModel;
@@ -39,11 +40,11 @@ public class Webservice {
 	@GET
 	@Path("addNodeToRootNode")
 	@Produces({ MediaType.APPLICATION_JSON })
-	public String addNodeToRootNode(@PathParam("text")String text) {
+	public String addNodeToRootNode( @DefaultValue("Sample Text") @QueryParam("text")String text) {
 		ModeController modeController = WebserviceController.getInstance().getModeController();
 		org.freeplane.features.map.MapModel mm = modeController.getMapController().getRootNode().getMap();
 		NodeModel root = modeController.getMapController().getRootNode();
-		NodeModel node = modeController.getMapController().newNode("Sample Text", mm);
+		NodeModel node = modeController.getMapController().newNode(text, mm);
 		root.insert(node);
 		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, "node", "", ""));
 		node.createID();
@@ -68,11 +69,11 @@ public class Webservice {
 	@GET
 	@Path("addNodeToSelectedNode")
 	@Produces({ MediaType.APPLICATION_JSON })
-	public String addNodeToSelectedNode(@PathParam("text")String text) {
+	public String addNodeToSelectedNode(@DefaultValue("Sample Text") @QueryParam("text")String text) {
 		ModeController modeController = WebserviceController.getInstance().getModeController();
 		org.freeplane.features.map.MapModel mm = modeController.getMapController().getRootNode().getMap();
 		NodeModel selectedNode = modeController.getMapController().getSelectedNodes().iterator().next();
-		NodeModel node = modeController.getMapController().newNode("Sample Text", mm);
+		NodeModel node = modeController.getMapController().newNode(text, mm);
 		selectedNode.insert(node);
 		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, "node", "", ""));
 		node.createID();
@@ -95,7 +96,7 @@ public class Webservice {
 	}
 
 	@GET
-	@Path("removeNode")
+	@Path("removeNode/{id}")
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Boolean removeNode(@PathParam("id")String id) {
 		ModeController modeController = WebserviceController.getInstance().getModeController();
