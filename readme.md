@@ -10,13 +10,13 @@ The Following REST-calls are currently implemented
 
 * http://localhost:8080/rest/v1/getMapModel
 	* returns the current Map-JSON-Model
-* http://localhost:8080/rest/v1/addNodeToRootNode?[text]
+* http://localhost:8080/rest/v1/addNodeToRootNode
 	* adds a node to the root of current map.
-	* if text is entered, it is added as node text
+	* node text is "Sample Text"
 	* returns node id
-* http://localhost:8080/rest/v1/addNodeToRootNode?[text]
+* http://localhost:8080/rest/v1/addNodeToRootNode/query?text={nodeText}
 	* adds a node to the root of current map.
-	* if text is entered, it is added as node text
+	* text is optional. it is added as node text.
 	* returns node id
 * http://localhost:8080/rest/v1/removeNode/{id}
 	* removes the specified node
