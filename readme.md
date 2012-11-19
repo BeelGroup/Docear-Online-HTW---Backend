@@ -27,30 +27,43 @@ The Following REST-calls are currently implemented
 # Suggested API
 
 ## Add a Node
-        POST /addNode  
+    POST /addNode  
 
 ### Input
-parentNodeId  
-_Required_ **string**  
-nodeText  
-_Required_ **string**  
-isHtml  
-_Optional_ **int**  
-hGap  
-_Optional_ **int**  
-shiftY  
-_Optional_ **int**  
-folded  
-_Optional_ **bool**  
-icons  
-_Optional_ **array of strings**  
-prefferedChild  
-_Optional_ **string**  
-defaultStyle  
-_Optional_ **string**  
-edgeStyle  
-_Optional_ **edge**  
-image  
-_Optional_ **image**  
-link  
-_Optional_ **string**  
+<dl>
+<dt>parentNodeId</dt>
+<dd><em>Required</em> <strong>int</strong></dd>
+
+<dt>hGap</dt>
+<dd><em>Optional</em> <strong>int</strong></dd>
+
+<dt>nodeText</dt>
+<dd><em>Required</em> <strong>string</strong></dd>
+
+<dt>isHtml</dt>
+<dd><em>Optional</em> <strong>bool</strong></dd>
+
+<dt>shiftY</dt>
+<dd><em>Optional</em> <strong>int</strong></dd>
+
+<dt>folded</dt>
+<dd><em>Optional</em> <strong>bool</strong></dd>
+
+<dt>icons</dt>
+<dd><em>Optional</em> <strong>array of strings</strong></dd>
+
+<dt>prefferedChild</dt>
+<dd><em>Optional</em> <strong>string</strong></dd>
+
+<dt>defaultStyle</dt>
+<dd><em>Optional</em> <strong>string</strong></dd>
+
+<dt>edgeStyle</dt>
+<dd><em>Optional</em> <strong>`edge`</strong></dd>
+
+<dt>image</dt>
+<dd><em>Optional</em> <strong>`image`</strong></dd>
+
+<dt>link</dt>
+<dd><em>Optional</em> <strong>string</strong></dd>
+</dl>
