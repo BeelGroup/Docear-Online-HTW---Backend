@@ -26,29 +26,29 @@ The Following REST-calls are currently implemented
 
 # Suggested API
 
-* add a node
-	POST /addNode
-### Input
+## Add a Node
+        POST /addNode  
 
+### Input
 hGap  
-: _Optional_ **int**  
+_Optional_ **int**  
 shiftY  
-: _Optional_ **int**  
+_Optional_ **int**  
 folded  
-: _Optional_ **bool**  
+_Optional_ **bool**  
 icons  
-: _Optional_ **array of strings**  
+_Optional_ **array of strings**  
 prefferedChild  
-: _Optional_ **string**  
+_Optional_ **string**  
 nodeText  
-: _Required_ **string**  
+_Required_ **string**  
 isHtml  
-: _Optional_ **int**  
+_Optional_ **int**  
 defaultStyle  
-: _Optional_ **string**  
+_Optional_ **string**  
 edgeStyle  
-: _Optional_ **edge**  
+_Optional_ **edge**  
 image  
-: _Optional_ **image**  
+_Optional_ **image**  
 link  
-: _Optional_ **string**  
+_Optional_ **string**  
