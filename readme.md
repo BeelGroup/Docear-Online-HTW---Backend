@@ -23,3 +23,32 @@ The Following REST-calls are currently implemented
 	* returns true on success
 * http://localhost:8080/rest/v1/sampleNode
 	* execute and see :) (in Docear)
+
+# Suggested API
+
+* add a node
+	POST /addNode
+### Input
+
+hGap  
+: _Optional_ **int**  
+shiftY  
+: _Optional_ **int**  
+folded  
+: _Optional_ **bool**  
+icons  
+: _Optional_ **array of strings**  
+prefferedChild  
+: _Optional_ **string**  
+nodeText  
+: _Required_ **string**  
+isHtml  
+: _Optional_ **int**  
+defaultStyle  
+: _Optional_ **string**  
+edgeStyle  
+: _Optional_ **edge**  
+image  
+: _Optional_ **image**  
+link  
+: _Optional_ **string**  
