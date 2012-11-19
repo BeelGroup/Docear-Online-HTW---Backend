@@ -30,6 +30,12 @@ The Following REST-calls are currently implemented
         POST /addNode  
 
 ### Input
+parentNodeId  
+_Required_ **string**  
+nodeText  
+_Required_ **string**  
+isHtml  
+_Optional_ **int**  
 hGap  
 _Optional_ **int**  
 shiftY  
@@ -40,10 +46,6 @@ icons
 _Optional_ **array of strings**  
 prefferedChild  
 _Optional_ **string**  
-nodeText  
-_Required_ **string**  
-isHtml  
-_Optional_ **int**  
 defaultStyle  
 _Optional_ **string**  
 edgeStyle  
