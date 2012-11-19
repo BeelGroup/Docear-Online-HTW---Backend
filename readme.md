@@ -26,6 +26,13 @@ The Following REST-calls are currently implemented
 
 # Suggested API
 
+## Get a MapObject
+    GET /getMap/{id}
+
+### Input
+mapId  
+_Required_ **string**
+
 ## Add a Node
     POST /addNode  
 
@@ -34,14 +41,27 @@ The Following REST-calls are currently implemented
 <dt>parentNodeId</dt>
 <dd><em>Required</em> <strong>int</strong></dd>
 
-<dt>hGap</dt>
-<dd><em>Optional</em> <strong>int</strong></dd>
-
 <dt>nodeText</dt>
-<dd><em>Required</em> <strong>string</strong></dd>
+<dd><em>Optional</em> <strong>string</strong></dd>
 
 <dt>isHtml</dt>
 <dd><em>Optional</em> <strong>bool</strong></dd>
+</dl>
+
+## Change a Node
+    POST /changeNode/{id}
+
+### Input
+<dl>
+
+<dt>nodeText</dt>
+<dd><em>Optional</em> <strong>string</strong></dd>
+
+<dt>isHtml</dt>
+<dd><em>Optional</em> <strong>bool</strong></dd>
+
+<dt>hGap</dt>
+<dd><em>Optional</em> <strong>int</strong></dd>
 
 <dt>shiftY</dt>
 <dd><em>Optional</em> <strong>int</strong></dd>
