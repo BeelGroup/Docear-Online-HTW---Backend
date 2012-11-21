@@ -27,7 +27,7 @@ The Following REST-calls are currently implemented
 # Suggested API
 
 ## Get a MapObject
-    GET /getMap/{id}
+    GET /Map/{id}
 
 ### Input
 mapId  
@@ -87,3 +87,21 @@ _Required_ **string**
 <dt>link</dt>
 <dd><em>Optional</em> <strong>string</strong></dd>
 </dl>
+
+## Login user
+    POST /login
+
+<dl>
+<dt>username</dt>
+<dd><em>Required</em> <strong>string</strong></dd>
+
+<dt>password</dt>
+<dd><em>Required</em> <strong>string</strong></dd>
+</dl>
+
+## Get user Data
+    GET /getUser/{userId}  
+
+## Get workspace Data
+    GET /getWorkspace/{workspaceId}
+
