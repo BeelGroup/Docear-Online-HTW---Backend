@@ -27,7 +27,7 @@ The Following REST-calls are currently implemented
 # Suggested API
 
 ## Get a MapObject
-    GET /getMap/{id}
+    GET /Map/{id}
 
 ### Input
 mapId  
