@@ -15,6 +15,7 @@ import org.osgi.framework.BundleContext;
 
 import com.sun.jersey.api.container.httpserver.HttpServerFactory;
 import com.sun.jersey.api.core.ClassNamesResourceConfig;
+import com.sun.jersey.api.core.PackagesResourceConfig;
 import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.net.httpserver.HttpServer;
 
@@ -51,8 +52,8 @@ public class WebserviceController {
 					);
 			
 			HttpServer server = HttpServerFactory.create( "http://localhost:8080/rest",rc );
-			
 			server.start();
+			
 		} catch (IOException e) {} 
 		finally {
 			//set back to original class loader

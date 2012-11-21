@@ -9,8 +9,8 @@ abstract public class NodeModelBase {
 
 	public final String id;
 	public final String nodeText;
-	public final boolean isHtml;
-	public final boolean folded;
+	public final Boolean isHtml;
+	public final Boolean folded;
 	public final String[] icons;
 	public final ImageModel image;
 	public final String link;

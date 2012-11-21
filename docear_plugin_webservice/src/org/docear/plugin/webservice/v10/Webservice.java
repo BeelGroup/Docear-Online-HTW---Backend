@@ -1,5 +1,6 @@
 package org.docear.plugin.webservice.v10;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -32,6 +33,13 @@ public class Webservice {
 		return mm;
 	}
 	
+	@GET
+	@Path("test")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public DefaultNodeModel test() {
+		return new DefaultNodeModel();
+	}
+	
 	@PUT
 	@Path("addNode/{parentNodeId}")
 	@Produces({ MediaType.APPLICATION_JSON })
@@ -56,21 +64,20 @@ public class Webservice {
 	
 	@POST
 	@Path("changeNode/{nodeId}")
+	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({ MediaType.APPLICATION_JSON })
-	public DefaultNodeModel changeNode(@PathParam("nodeId") String nodeId,
-									@QueryParam("nodeText") String nodeText, 
-									@QueryParam("isHtml") Boolean isHtml) throws NodeNotFoundException {
+	public DefaultNodeModel changeNode(DefaultNodeModel node) throws NodeNotFoundException {
 		//get map
 		ModeController modeController = WebserviceController.getInstance().getModeController();
 		org.freeplane.features.map.MapModel mm = modeController.getController().getMap();
 		//get node
-		NodeModel node = mm.getNodeForID(nodeId);
+		NodeModel freeplaneNode = mm.getNodeForID(node.id);
 		if(node == null)
-			throw new NodeNotFoundException("Node with id '"+nodeId+"' not found");
+			throw new NodeNotFoundException("Node with id '"+node.id+"' not found");
 		
 		//TODO do stuff
-		
-		return new DefaultNodeModel(node);	
+		//Response.ok(new DefaultNodeModel(node)).
+		return new DefaultNodeModel(freeplaneNode);	
 	}
 
 	@GET

@@ -11,14 +11,14 @@ import org.freeplane.features.nodelocation.LocationModel;
 public class DefaultNodeModel extends NodeModelBase{
 	public final List<DefaultNodeModel> children;
 
-	public int hGap;
-	public int shiftY;
+	public Integer hGap;
+	public Integer shiftY;
 
 	/**
 	 * necessary for JAX-B
 	 */
 	@SuppressWarnings("unused")
-	private DefaultNodeModel() {
+	public DefaultNodeModel() {
 		super();
 		children = new ArrayList<DefaultNodeModel>();
 	}
