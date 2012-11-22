@@ -1,8 +1,11 @@
 package org.docear.plugin.webservice.v10.model;
 
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.freeplane.features.icon.MindIcon;
+import org.freeplane.features.map.NodeModel;
 
 @XmlTransient
 abstract public class NodeModelBase {
@@ -15,6 +18,9 @@ abstract public class NodeModelBase {
 	public final ImageModel image;
 	public final String link;
 	
+	@XmlTransient
+	protected final NodeModel freeplaneNode;
+	
 	/**
 	 * necessary for JAX-B
 	 */
@@ -26,9 +32,10 @@ abstract public class NodeModelBase {
 		icons = null;
 		image = null;
 		link = null;
+		freeplaneNode = null;
 	}
 	
-	public NodeModelBase(org.freeplane.features.map.NodeModel freeplaneNode) {
+	public NodeModelBase(org.freeplane.features.map.NodeModel freeplaneNode, boolean autoloadChildren) {
 		
 		this.id = freeplaneNode.getID();
 		this.nodeText = freeplaneNode.getText();
@@ -36,8 +43,12 @@ abstract public class NodeModelBase {
 		this.folded = freeplaneNode.isFolded();
 		this.icons = getIconArray(freeplaneNode);
 		this.image = getImage(freeplaneNode);
+		this.freeplaneNode = freeplaneNode;
 		
 		this.link = null; //TODO: Where is the link hidden? Might be an Extension. (JS)
+		
+		if(autoloadChildren)
+			loadChildren(true);
 	}
 	
 	private String[] getIconArray(org.freeplane.features.map.NodeModel freeplaneNode) {
@@ -53,4 +64,12 @@ abstract public class NodeModelBase {
 		// TODO: implement; Where is the Image hidden? (JS) 
 		return null;
 	}
+	
+	/**
+	 * loads the children into the model
+	 * @return number of children that have been added
+	 */
+	public abstract int loadChildren(boolean autoloadChildren);
+	
+	public abstract List<NodeModelBase> getAllChildren();
 }

@@ -13,11 +13,13 @@ public class MapModel {
 	public MapModel() {
 	}
 	
-	public MapModel(org.freeplane.features.map.MapModel freeplaneMap) {
+	public MapModel(org.freeplane.features.map.MapModel freeplaneMap, boolean autoloadChildren) {
 		id = freeplaneMap.getTitle();
 		isReadonly = freeplaneMap.isReadOnly();
 		
 		NodeModel rootNodeFreeplane = freeplaneMap.getRootNode();
-		root = new RootNodeModel(rootNodeFreeplane);
+		root = new RootNodeModel(rootNodeFreeplane, autoloadChildren);
 	}
+	
+	
 }

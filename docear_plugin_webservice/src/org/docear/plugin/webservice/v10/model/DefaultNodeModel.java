@@ -9,7 +9,7 @@ import org.freeplane.features.nodelocation.LocationModel;
 
 @XmlRootElement
 public class DefaultNodeModel extends NodeModelBase{
-	public final List<DefaultNodeModel> children;
+	public List<NodeModelBase> children;
 
 	public Integer hGap;
 	public Integer shiftY;
@@ -17,16 +17,12 @@ public class DefaultNodeModel extends NodeModelBase{
 	/**
 	 * necessary for JAX-B
 	 */
-	@SuppressWarnings("unused")
 	public DefaultNodeModel() {
 		super();
-		children = new ArrayList<DefaultNodeModel>();
 	}
 	
-	public DefaultNodeModel(org.freeplane.features.map.NodeModel freeplaneNode) {
-		super(freeplaneNode);
-
-		children = new ArrayList<DefaultNodeModel>();
+	public DefaultNodeModel(org.freeplane.features.map.NodeModel freeplaneNode, boolean autoloadChildren) {
+		super(freeplaneNode,autoloadChildren);
 
 		LocationModel l = freeplaneNode.getExtension(LocationModel.class);
 		if(l != null) {
@@ -36,14 +32,28 @@ public class DefaultNodeModel extends NodeModelBase{
 			hGap = 0;
 			shiftY = 0;
 		}
-
-		addChildren(freeplaneNode);
 	}
 
-	private void addChildren(org.freeplane.features.map.NodeModel freeplaneNode) {
+	@Override
+	public int loadChildren(boolean autoloadChildren) {
+		children = new ArrayList<NodeModelBase>();
+		int totalCount = freeplaneNode.getChildCount();
 		for(org.freeplane.features.map.NodeModel freeplaneChild : freeplaneNode.getChildren()) {
-			children.add(new DefaultNodeModel(freeplaneChild));
+			children.add(new DefaultNodeModel(freeplaneChild,false));
 		}
+		
+		if(autoloadChildren) {
+			for(NodeModelBase child : this.children) {
+				totalCount += child.loadChildren(true);
+			}
+		}
+			
+		return totalCount;
+	}
+
+	@Override
+	public List<NodeModelBase> getAllChildren() {
+		return children;
 	}
 
 }
