@@ -1,7 +1,9 @@
 package org.docear.plugin.webservice.v10.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.freeplane.features.icon.MindIcon;
@@ -18,8 +20,10 @@ abstract public class NodeModelBase {
 	public final ImageModel image;
 	public final String link;
 	
-	@XmlTransient
-	protected final NodeModel freeplaneNode;
+	//@XmlTransient
+	//protected final NodeModel freeplaneNode;
+	@XmlElement
+	protected List<String> childrenIds;
 	
 	/**
 	 * necessary for JAX-B
@@ -32,7 +36,7 @@ abstract public class NodeModelBase {
 		icons = null;
 		image = null;
 		link = null;
-		freeplaneNode = null;
+		//freeplaneNode = null;
 	}
 	
 	public NodeModelBase(org.freeplane.features.map.NodeModel freeplaneNode, boolean autoloadChildren) {
@@ -43,12 +47,16 @@ abstract public class NodeModelBase {
 		this.folded = freeplaneNode.isFolded();
 		this.icons = getIconArray(freeplaneNode);
 		this.image = getImage(freeplaneNode);
-		this.freeplaneNode = freeplaneNode;
+		//this.freeplaneNode = freeplaneNode;
 		
 		this.link = null; //TODO: Where is the link hidden? Might be an Extension. (JS)
 		
-		if(autoloadChildren)
+		
+		saveChildrenIds(freeplaneNode);
+		
+		if(autoloadChildren) { //load children models
 			loadChildren(true);
+		}
 	}
 	
 	private String[] getIconArray(org.freeplane.features.map.NodeModel freeplaneNode) {
@@ -63,6 +71,18 @@ abstract public class NodeModelBase {
 	private ImageModel getImage(org.freeplane.features.map.NodeModel freeplaneNode) {
 		// TODO: implement; Where is the Image hidden? (JS) 
 		return null;
+	}
+	
+	/**
+	 * stores nodeIds
+	 * @param freeplaneNode
+	 */
+	protected void saveChildrenIds(NodeModel freeplaneNode) {
+		childrenIds = new ArrayList<String>();
+		
+		for(NodeModel node : freeplaneNode.getChildren()) {
+			childrenIds.add(node.getID());
+		}
 	}
 	
 	/**

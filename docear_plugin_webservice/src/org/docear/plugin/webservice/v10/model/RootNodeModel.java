@@ -5,6 +5,10 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.docear.plugin.webservice.WebserviceController;
+import org.freeplane.features.map.MapController;
+import org.freeplane.features.map.NodeModel;
+
 @XmlRootElement
 public class RootNodeModel extends NodeModelBase {
 	
@@ -38,8 +42,10 @@ public class RootNodeModel extends NodeModelBase {
 		leftChildren = new ArrayList<DefaultNodeModel>();
 		rightChildren = new ArrayList<DefaultNodeModel>();
 		
-		int totalCount = freeplaneNode.getChildCount();
-		for(org.freeplane.features.map.NodeModel child : freeplaneNode.getChildren()) {
+		MapController mapController = WebserviceController.getInstance().getModeController().getMapController(); 
+		int totalCount = childrenIds.size();
+		for(String nodeId : childrenIds) {
+			NodeModel child = mapController.getNodeFromID(nodeId);
 			if(child.isLeft()) {
 				this.leftChildren.add(new org.docear.plugin.webservice.v10.model.DefaultNodeModel(child,false));
 			} else {
@@ -56,6 +62,7 @@ public class RootNodeModel extends NodeModelBase {
 			}
 		}
 			
+		childrenIds = null;
 		return totalCount;
 	}
 

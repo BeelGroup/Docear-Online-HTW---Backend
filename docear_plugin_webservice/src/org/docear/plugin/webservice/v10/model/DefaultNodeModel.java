@@ -5,6 +5,9 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.docear.plugin.webservice.WebserviceController;
+import org.freeplane.features.map.MapController;
+import org.freeplane.features.map.NodeModel;
 import org.freeplane.features.nodelocation.LocationModel;
 
 @XmlRootElement
@@ -37,8 +40,12 @@ public class DefaultNodeModel extends NodeModelBase{
 	@Override
 	public int loadChildren(boolean autoloadChildren) {
 		children = new ArrayList<NodeModelBase>();
-		int totalCount = freeplaneNode.getChildCount();
-		for(org.freeplane.features.map.NodeModel freeplaneChild : freeplaneNode.getChildren()) {
+		
+		MapController mapController = WebserviceController.getInstance().getModeController().getMapController();
+		
+		int totalCount = childrenIds.size();
+		for(String nodeId : childrenIds) {
+			NodeModel freeplaneChild = mapController.getNodeFromID(nodeId);
 			children.add(new DefaultNodeModel(freeplaneChild,false));
 		}
 		
@@ -47,9 +54,11 @@ public class DefaultNodeModel extends NodeModelBase{
 				totalCount += child.loadChildren(true);
 			}
 		}
-			
+		
+		childrenIds = null;
 		return totalCount;
 	}
+	
 
 	@Override
 	public List<NodeModelBase> getAllChildren() {
