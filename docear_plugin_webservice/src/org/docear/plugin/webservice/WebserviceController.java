@@ -2,6 +2,7 @@ package org.docear.plugin.webservice;
 
 import java.awt.Container;
 import java.io.IOException;
+import java.util.logging.Level;
 
 import org.docear.plugin.webservice.v10.Webservice;
 import org.docear.plugin.webservice.v10.model.EdgeModel;
@@ -25,13 +26,13 @@ public class WebserviceController {
 
 	private static WebserviceController webserviceController;	
 	private final ModeController modeController;
+	private HttpServer server = null;
 	
 	public static WebserviceController getInstance() {
 		return webserviceController;
 	}
 
 	WebserviceController(final ModeController modeController, BundleContext context) {
-		super();
 		webserviceController = this;
 		this.modeController = modeController;
 		LogUtils.info("starting Webservice Plugin...");
@@ -51,10 +52,12 @@ public class WebserviceController {
 					EdgeModel.class
 					);
 			
-			HttpServer server = HttpServerFactory.create( "http://localhost:8080/rest",rc );
+			server = HttpServerFactory.create( "http://localhost:8080/rest",rc );
 			server.start();
 			
-		} catch (IOException e) {} 
+		} catch (IOException e) {
+			LogUtils.getLogger().log(Level.SEVERE, "Webservice could not be started.",e);
+		} 
 		finally {
 			//set back to original class loader
 			Thread.currentThread().setContextClassLoader(contextClassLoader);

@@ -1,8 +1,12 @@
+package tests;
 import static org.junit.Assert.assertTrue;
 
+import javax.jws.WebResult;
 import javax.ws.rs.core.MediaType;
 
+import org.docear.plugin.webservice.v10.model.MapModel;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,7 +41,11 @@ public class RestApiTest {
 	
 	@Test
 	public void getMapTest() {
+		WebResource wr = client.resource("http://localhost:8080/rest/v1");
 		
+		WebResource getMapResource = wr.path("map").path("NOTWORKING").queryParam("nodeCount", "5"); 
+		MapModel map = getMapResource.get(MapModel.class);
+		assertTrue(map.root.nodeText.equals("foo2"));
 	}
 
 }

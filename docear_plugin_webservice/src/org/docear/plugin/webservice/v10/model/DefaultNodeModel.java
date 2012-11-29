@@ -3,6 +3,7 @@ package org.docear.plugin.webservice.v10.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.docear.plugin.webservice.WebserviceController;
@@ -12,6 +13,7 @@ import org.freeplane.features.nodelocation.LocationModel;
 
 @XmlRootElement
 public class DefaultNodeModel extends NodeModelBase{
+	@XmlElement
 	public List<NodeModelBase> children;
 
 	public Integer hGap;

@@ -3,6 +3,7 @@ package org.docear.plugin.webservice.v10.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.docear.plugin.webservice.WebserviceController;
@@ -12,8 +13,9 @@ import org.freeplane.features.map.NodeModel;
 @XmlRootElement
 public class RootNodeModel extends NodeModelBase {
 	
-	
+	@XmlElement
 	public List<DefaultNodeModel> leftChildren;
+	@XmlElement
 	public List<DefaultNodeModel> rightChildren;
 
 	//public NodeModel preferredChild;
