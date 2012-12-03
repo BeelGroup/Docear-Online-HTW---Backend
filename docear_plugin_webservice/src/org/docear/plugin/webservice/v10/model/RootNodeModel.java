@@ -3,6 +3,9 @@ package org.docear.plugin.webservice.v10.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -10,12 +13,15 @@ import org.docear.plugin.webservice.WebserviceController;
 import org.freeplane.features.map.MapController;
 import org.freeplane.features.map.NodeModel;
 
-@XmlRootElement
+@XmlRootElement(name="node")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class RootNodeModel extends NodeModelBase {
 	
-	@XmlElement
+	//@XmlElement(required=true,nillable=true)
+	@XmlElement(name="leftChildren")
 	public List<DefaultNodeModel> leftChildren;
-	@XmlElement
+	//@XmlElement(required=true)
+	@XmlElement(name="rightChildren")
 	public List<DefaultNodeModel> rightChildren;
 
 	//public NodeModel preferredChild;
@@ -69,8 +75,8 @@ public class RootNodeModel extends NodeModelBase {
 	}
 
 	@Override
-	public List<NodeModelBase> getAllChildren() {
-		List<NodeModelBase> list = new ArrayList<NodeModelBase>(leftChildren);
+	public List<DefaultNodeModel> getAllChildren() {
+		List<DefaultNodeModel> list = new ArrayList<DefaultNodeModel>(leftChildren);
 		list.addAll(rightChildren);
 		return list;
 	}

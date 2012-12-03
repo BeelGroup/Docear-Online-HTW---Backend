@@ -3,6 +3,9 @@ package org.docear.plugin.webservice.v10.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -11,10 +14,11 @@ import org.freeplane.features.map.MapController;
 import org.freeplane.features.map.NodeModel;
 import org.freeplane.features.nodelocation.LocationModel;
 
-@XmlRootElement
+@XmlRootElement(name="node")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class DefaultNodeModel extends NodeModelBase{
-	@XmlElement
-	public List<NodeModelBase> children;
+	@XmlElement(name="children")
+	public List<DefaultNodeModel> children;
 
 	public Integer hGap;
 	public Integer shiftY;
@@ -41,7 +45,7 @@ public class DefaultNodeModel extends NodeModelBase{
 
 	@Override
 	public int loadChildren(boolean autoloadChildren) {
-		children = new ArrayList<NodeModelBase>();
+		children = new ArrayList<DefaultNodeModel>();
 		
 		MapController mapController = WebserviceController.getInstance().getModeController().getMapController();
 		
@@ -63,7 +67,7 @@ public class DefaultNodeModel extends NodeModelBase{
 	
 
 	@Override
-	public List<NodeModelBase> getAllChildren() {
+	public List<DefaultNodeModel> getAllChildren() {
 		return children;
 	}
 

@@ -4,12 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
 
+import org.codehaus.jackson.annotate.JsonTypeInfo;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.freeplane.features.icon.MindIcon;
 import org.freeplane.features.map.NodeModel;
 
 @XmlTransient
+@XmlSeeAlso(value={DefaultNodeModel.class,RootNodeModel.class})
 abstract public class NodeModelBase {
 
 	public final String id;
@@ -91,5 +97,5 @@ abstract public class NodeModelBase {
 	 */
 	public abstract int loadChildren(boolean autoloadChildren);
 	
-	public abstract List<NodeModelBase> getAllChildren();
+	public abstract List<DefaultNodeModel> getAllChildren();
 }

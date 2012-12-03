@@ -1,10 +1,13 @@
 package org.docear.plugin.webservice.v10.model;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.freeplane.features.map.NodeModel;
 
-@XmlRootElement
+@XmlRootElement(name = "mapModel")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class MapModel {
 	public String id;
 	public Boolean isReadonly;

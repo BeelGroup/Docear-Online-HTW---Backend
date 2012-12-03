@@ -23,7 +23,6 @@ import org.freeplane.features.mode.ModeController;
 
 @Path("/v1")
 public class Webservice {
-
 	
 	/**
 	 * returns a map as a JSON-Object

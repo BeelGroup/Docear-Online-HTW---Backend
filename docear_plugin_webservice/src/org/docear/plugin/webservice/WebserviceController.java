@@ -18,6 +18,7 @@ import com.sun.jersey.api.container.httpserver.HttpServerFactory;
 import com.sun.jersey.api.core.ClassNamesResourceConfig;
 import com.sun.jersey.api.core.PackagesResourceConfig;
 import com.sun.jersey.api.core.ResourceConfig;
+import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.net.httpserver.HttpServer;
 
 
@@ -45,15 +46,14 @@ public class WebserviceController {
 		
 		try {
 			ResourceConfig rc = new ClassNamesResourceConfig(
-					Webservice.class,
-					MapModel.class,
-					NodeModel.class,
-					RootNodeModel.class,
-					EdgeModel.class
+					Webservice.class
 					);
+			
 			
 			server = HttpServerFactory.create( "http://localhost:8080/rest",rc );
 			server.start();
+			
+			
 			
 		} catch (IOException e) {
 			LogUtils.getLogger().log(Level.SEVERE, "Webservice could not be started.",e);
