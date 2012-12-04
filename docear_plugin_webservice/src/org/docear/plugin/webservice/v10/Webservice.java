@@ -11,19 +11,22 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.atmosphere.annotation.Broadcast;
+import org.atmosphere.annotation.Suspend;
 import org.docear.plugin.webservice.WebserviceController;
 import org.docear.plugin.webservice.v10.exceptions.MapNotFoundException;
 import org.docear.plugin.webservice.v10.exceptions.NodeNotFoundException;
 import org.docear.plugin.webservice.v10.model.DefaultNodeModel;
 import org.docear.plugin.webservice.v10.model.MapModel;
 import org.freeplane.features.map.MapChangeEvent;
+import org.freeplane.features.map.MapController;
 import org.freeplane.features.map.NodeChangeEvent;
 import org.freeplane.features.map.NodeModel;
 import org.freeplane.features.mode.ModeController;
 
 @Path("/v1")
 public class Webservice {
-	
+
 	/**
 	 * returns a map as a JSON-Object
 	 * @param id ID of map
@@ -41,16 +44,16 @@ public class Webservice {
 		org.freeplane.features.map.MapModel freeplaneMap = modeController.getController().getMap();
 		if(freeplaneMap == null)
 			throw new MapNotFoundException("Map with id '"+id+"' not found.");
-		
+
 		MapModel mm = new MapModel(freeplaneMap,loadAllNodes);
-		
+
 		if(!loadAllNodes) {
 			WebserviceHelper.loadNodesIntoModel(mm.root, nodeCount);
 		}
-		
+
 		return mm;
 	}
-	
+
 	/**
 	 * returns a node as a JSON-Object
 	 * @param id ID of node
@@ -65,42 +68,49 @@ public class Webservice {
 			@QueryParam("nodeCount") @DefaultValue("-1") int nodeCount) throws NodeNotFoundException {
 		ModeController modeController = getModeController();
 		boolean loadAllNodes = nodeCount == -1;
-		
+
 		NodeModel freeplaneNode = modeController.getMapController().getNodeFromID(id);
 		if(freeplaneNode == null)
 			throw new NodeNotFoundException("Node with id '"+id+"' not found.");
-		
+
 		DefaultNodeModel node = new DefaultNodeModel(freeplaneNode,loadAllNodes);
-		
+
 		if(!loadAllNodes) {
 			WebserviceHelper.loadNodesIntoModel(node, nodeCount);
 		}
-		
+
 		return node;
 	}
-	
+
 	@POST
 	@Path("addNode/{parentNodeId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public DefaultNodeModel addNode(@PathParam("parentNodeId") String parentNodeId,
-									@QueryParam("nodeText") @DefaultValue("new Node") String nodeText, 
-									@QueryParam("isHtml") @DefaultValue("false") Boolean isHtml) throws NodeNotFoundException {
-		//get map
+			@QueryParam("nodeText") @DefaultValue("new Node") String nodeText, 
+			@QueryParam("isHtml") @DefaultValue("false") Boolean isHtml) throws NodeNotFoundException {
+
 		ModeController modeController = getModeController();
+		MapController mapController = modeController.getMapController();
+		//get map
 		org.freeplane.features.map.MapModel mm = modeController.getController().getMap();
+		
 		//get parent Node
-		NodeModel parentNode = mm.getNodeForID(parentNodeId);
+		NodeModel parentNode = mapController.getNodeFromID(parentNodeId);
+		
 		if(parentNode == null)
 			throw new NodeNotFoundException("Node with id '"+parentNodeId+"' not found");
+		
 		//create new node
 		NodeModel node = modeController.getMapController().newNode(nodeText, mm);
-		modeController.getMapController().insertNodeIntoWithoutUndo(node, parentNode);
-		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, "node", "", ""));
 		
+		//insert node
+		mapController.insertNodeIntoWithoutUndo(node, parentNode);
+		mapController.fireMapChanged(new MapChangeEvent(this, "node", "", ""));
+
 		node.createID();
 		return new DefaultNodeModel(node, false);	
 	}
-	
+
 	@POST
 	@Path("changeNode/{nodeId}")
 	@Consumes({MediaType.APPLICATION_JSON})
@@ -113,7 +123,7 @@ public class Webservice {
 		NodeModel freeplaneNode = mm.getNodeForID(node.id);
 		if(freeplaneNode == null)
 			throw new NodeNotFoundException("Node with id '"+node.id+"' not found");
-		
+
 		//TODO do stuff
 		//Response.ok(new DefaultNodeModel(node)).
 		return new DefaultNodeModel(freeplaneNode,false);	
@@ -140,7 +150,7 @@ public class Webservice {
 		return node.getID();
 	}	
 
-	
+
 	@GET
 	@Path("addNodeToSelectedNode/query")
 	@Produces({ MediaType.APPLICATION_JSON })
@@ -164,14 +174,28 @@ public class Webservice {
 		NodeModel node = modeController.getMapController().getNodeFromID(id);
 		if(node == null)
 			throw new NodeNotFoundException("Node with id '"+id+"' not found");
-		
+
 		node.removeFromParent();
 		node.fireNodeChanged(new NodeChangeEvent(node, "parent", "", ""));
 		return new Boolean(true).toString();
 	}
-	
+
 	// testing methods
-	
+
+	@Suspend(contentType = "application/json")
+	@GET
+	public String suspend() {
+		return "";
+	}
+
+
+	@Broadcast(writeEntity = false)
+	@POST
+	@Produces("application/json")
+	public Response broadcast(Message message) {
+		return new Response(message.author, message.message);
+	}
+
 	@GET
 	@Path("addNodeToRootNode/query")
 	@Produces({ MediaType.APPLICATION_JSON })
@@ -200,14 +224,14 @@ public class Webservice {
 		node.createID();
 		return node.getID();
 	}
-	
+
 	@GET
 	@Path("sampleNode")
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Boolean sampleNode() {
 		ModeController modeController = getModeController();
-		
-		
+
+
 
 		org.freeplane.features.map.MapModel mm = getOpenMap();
 		NodeModel root = modeController.getMapController().getRootNode();
@@ -239,11 +263,11 @@ public class Webservice {
 	private ModeController getModeController() {
 		return WebserviceController.getInstance().getModeController();
 	}
-	
+
 	private org.freeplane.features.map.MapModel getOpenMap() {
 		ModeController modeController = getModeController();
 		return modeController.getMapController().getRootNode().getMap();
 	}
-	
+
 
 }
