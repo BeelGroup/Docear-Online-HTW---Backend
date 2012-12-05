@@ -9,13 +9,5 @@
 	<classpathentry kind="lib" path="lib/jersey-bundle-1.16.jar"/>
 	<classpathentry kind="lib" path="lib/jersey-json-1.16.jar"/>
 	<classpathentry kind="lib" path="lib/jsr311-api-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/atmosphere-annotations-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/atmosphere-compat-jbossweb-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/atmosphere-compat-tomcat-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/atmosphere-compat-tomcat7-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/atmosphere-jersey-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/atmosphere-jersey-1.1.0.beta1.jar"/>
-	<classpathentry kind="lib" path="lib/atmosphere-runtime-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/slf4j-api-1.6.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

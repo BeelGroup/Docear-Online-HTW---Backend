@@ -1,9 +1,10 @@
 package tests;
 import javax.ws.rs.core.MediaType;
 
+
 import org.docear.plugin.webservice.v10.model.DefaultNodeModel;
 import org.docear.plugin.webservice.v10.model.MapModel;
-import org.fest.assertions.Assertions;
+import static org.fest.assertions.Assertions.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,17 +39,17 @@ public class RestApiTest {
 	public void addNodeToRootAndRemoveTest() {
 		WebResource wr = client.resource("http://localhost:8080/rest/v1");
 		String nodeId = wr.path("addNodeToRootNode").accept(MediaType.APPLICATION_JSON_TYPE).get(String.class);
-		Assertions.assertThat(nodeId).startsWith("ID_");
+		assertThat(nodeId).startsWith("ID_");
 
 		Boolean deleted = Boolean.valueOf(wr.path("removeNode").path(nodeId).delete(String.class));
-		Assertions.assertThat(deleted).isTrue();
+		assertThat(deleted).isTrue();
 	}
 
 	@Test
-	public void getMapTest() {
+	public void getMapAsJsonTest() {
 		WebResource wr = client.resource("http://localhost:8080/rest/v1");
 
-		WebResource getMapResource = wr.path("map").path("NOTWORKING").queryParam("nodeCount", "5");
+		WebResource getMapResource = wr.path("map").path("json").path("NOTWORKING").queryParam("nodeCount", "5");
 		ClientResponse cr = getMapResource.accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
 		
@@ -60,34 +61,34 @@ public class RestApiTest {
 		//		mapper.configure(DeserializationConfig.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 		//      MapModel map = mapper.readValue(content, MapModel.class);// cr.getEntity(MapModel.class);
 		
-		Assertions.assertThat(cr.getStatus()).isEqualTo(200);
+		assertThat(cr.getStatus()).isEqualTo(200);
 		
 		MapModel map = cr.getEntity(MapModel.class);
 		
-		Assertions.assertThat(map).isInstanceOf(MapModel.class);
-		Assertions.assertThat(map.root.nodeText).isEqualTo("foo2");
+		assertThat(map).isInstanceOf(MapModel.class);
+		assertThat(map.root.nodeText).isEqualTo("foo2");
 	}
 	
 	@Test
 	public void getAddAndRemoveNodeToFirstRightChild() {
 		WebResource wr = client.resource("http://localhost:8080/rest/v1");
 		
-		MapModel map = wr.path("map").path("NOTWORKING").queryParam("nodeCount", "5").get(MapModel.class);
+		MapModel map = wr.path("map").path("json").path("NOTWORKING").queryParam("nodeCount", "5").get(MapModel.class);
 		DefaultNodeModel node =  map.root.rightChildren.get(0);
 		
-		WebResource addNodeResource = wr.path("addNode").path(node.id).queryParam("nodeText", "myNode");
+		WebResource addNodeResource = wr.path("node").path(node.id).queryParam("nodeText", "myNode");
 		ClientResponse cr = addNodeResource.accept(MediaType.APPLICATION_JSON).post(ClientResponse.class);
 		
-		Assertions.assertThat(cr.getStatus()).isEqualTo(200);
+		assertThat(cr.getStatus()).isEqualTo(200);
 		DefaultNodeModel newNode = cr.getEntity(DefaultNodeModel.class);
 		
-		Assertions.assertThat(newNode).isInstanceOf(DefaultNodeModel.class);
-		Assertions.assertThat(newNode.nodeText).isEqualTo("myNode");
+		assertThat(newNode).isInstanceOf(DefaultNodeModel.class);
+		assertThat(newNode.nodeText).isEqualTo("myNode");
 		
 		
 		
 		Boolean deleted = Boolean.valueOf(wr.path("removeNode").path(newNode.id).delete(String.class));
-		Assertions.assertThat(deleted).isTrue();
+		assertThat(deleted).isTrue();
 		
 	}
 

@@ -1,5 +1,11 @@
 package org.docear.plugin.webservice.v10;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URL;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -11,8 +17,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import org.atmosphere.annotation.Broadcast;
-import org.atmosphere.annotation.Suspend;
 import org.docear.plugin.webservice.WebserviceController;
 import org.docear.plugin.webservice.v10.exceptions.MapNotFoundException;
 import org.docear.plugin.webservice.v10.exceptions.NodeNotFoundException;
@@ -34,7 +38,7 @@ public class Webservice {
 	 * @return a map model
 	 */
 	@GET
-	@Path("map/{id}")
+	@Path("map/json/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public MapModel getMapModel(
 			@PathParam("id") String id, 
@@ -52,6 +56,37 @@ public class Webservice {
 		}
 
 		return mm;
+	}
+	
+	/**
+	 * returns a map as a JSON-Object
+	 * @param id ID of map
+	 * @param nodeCount soft limit of node count. When limit is reached, it only loads the outstanding child nodes of the current node.
+	 * @return a map model
+	 * @throws IOException 
+	 */
+	@GET
+	@Path("map/xml/{id}")
+	@Produces(MediaType.APPLICATION_XML)
+	public String getMapModelXml(
+			@PathParam("id") String id) throws MapNotFoundException, IOException {
+		ModeController modeController = getModeController();
+		MapController mapController = modeController.getMapController();
+		URL location = modeController.getController().getMap().getURL();
+		File f = new File(location.getFile());
+		BufferedReader reader = new BufferedReader(new FileReader(f));
+		
+		String result = "";
+		String line;
+		while((line = reader.readLine()) != null) {
+			result += line+"\n";
+		}
+		
+		org.freeplane.features.map.MapModel freeplaneMap = modeController.getController().getMap();
+		if(freeplaneMap == null)
+			throw new MapNotFoundException("Map with id '"+id+"' not found.");
+		
+		return result;
 	}
 
 	/**
@@ -83,7 +118,7 @@ public class Webservice {
 	}
 
 	@POST
-	@Path("addNode/{parentNodeId}")
+	@Path("node/{parentNodeId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public DefaultNodeModel addNode(@PathParam("parentNodeId") String parentNodeId,
 			@QueryParam("nodeText") @DefaultValue("new Node") String nodeText, 
@@ -129,6 +164,21 @@ public class Webservice {
 		return new DefaultNodeModel(freeplaneNode,false);	
 	}
 
+
+	@DELETE
+	@Path("removeNode/{id}")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public String removeNode(@PathParam("id")String id) throws NodeNotFoundException {
+		ModeController modeController = getModeController();
+		NodeModel node = modeController.getMapController().getNodeFromID(id);
+		if(node == null)
+			throw new NodeNotFoundException("Node with id '"+id+"' not found");
+
+		node.removeFromParent();
+		node.fireNodeChanged(new NodeChangeEvent(node, "parent", "", ""));
+		return new Boolean(true).toString();
+	}
+	
 	@GET
 	@Produces({ MediaType.TEXT_PLAIN  })
 	@Path("search/mapId/{mapId}/query/{query}")
@@ -166,36 +216,8 @@ public class Webservice {
 		return node.getID();
 	}
 
-	@DELETE
-	@Path("removeNode/{id}")
-	@Produces({ MediaType.APPLICATION_JSON })
-	public String removeNode(@PathParam("id")String id) throws NodeNotFoundException {
-		ModeController modeController = getModeController();
-		NodeModel node = modeController.getMapController().getNodeFromID(id);
-		if(node == null)
-			throw new NodeNotFoundException("Node with id '"+id+"' not found");
-
-		node.removeFromParent();
-		node.fireNodeChanged(new NodeChangeEvent(node, "parent", "", ""));
-		return new Boolean(true).toString();
-	}
 
 	// testing methods
-
-	@Suspend(contentType = "application/json")
-	@GET
-	public String suspend() {
-		return "";
-	}
-
-
-	@Broadcast(writeEntity = false)
-	@POST
-	@Produces("application/json")
-	public Response broadcast(Message message) {
-		return new Response(message.author, message.message);
-	}
-
 	@GET
 	@Path("addNodeToRootNode/query")
 	@Produces({ MediaType.APPLICATION_JSON })
