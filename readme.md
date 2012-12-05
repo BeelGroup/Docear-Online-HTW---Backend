@@ -8,12 +8,75 @@
 
 The Following REST-calls are currently implemented
 
-* http://localhost:8080/rest/v1/getMapModel
-	* returns the current Map-JSON-Model
-* http://localhost:8080/rest/v1/addNodeToRootNode
-	* adds a node to the root of current map.
-	* node text is "Sample Text"
-	* returns node id
+## Get a Map as json
+    GET /map/json/{mapId}?[nodeCount]
+
+### Input
+mapId  
+_Required_ **string**  
+  
+nodeCount - soft limit of nodes to receive  
+_Optional_ **int**  
+
+### Return
+returns MapModel
+
+## Get a Map as xml
+    GET /map/xml/{mapId}
+
+### Input
+mapId  
+_Required_ **string**  
+
+### Return
+returns content of .mm-file
+  
+## Get a Node as json
+    GET /node/{nodeId}?[nodeCount]
+
+### Input
+nodeId  
+_Required_ **string**  
+  
+nodeCount - soft limit of nodes to receive  
+_Optional_ **int** 
+
+### Return
+returns DefaultNodeModel
+
+## Add a Node
+    POST /node/{parentNodeId}?[nodeText]&[isHtml]
+
+### Input
+
+parentNodeId  
+_Required_ **int**  
+  
+nodeText  
+_Optional_ **string**  
+default: **"new Node"**  
+  
+isHtml  
+_Optional_ **bool**  
+default: **false**  
+
+### Return
+returns DefaultNodeModel
+
+## Add a Node
+    DELETE /node/{nodeId}
+
+### Input
+
+nodeId  
+_Required_ **int**   
+
+### Return
+returns Boolean
+  
+
+# Other Methods
+
 * http://localhost:8080/rest/v1/addNodeToRootNode/query?text={nodeText}
 	* adds a node to the root of current map.
 	* text is optional. it is added as node text.
@@ -26,27 +89,6 @@ The Following REST-calls are currently implemented
 
 # Suggested API
 
-## Get a MapObject
-    GET /Map/{id}
-
-### Input
-mapId  
-_Required_ **string**
-
-## Add a Node
-    POST /addNode  
-
-### Input
-<dl>
-<dt>parentNodeId</dt>
-<dd><em>Required</em> <strong>int</strong></dd>
-
-<dt>nodeText</dt>
-<dd><em>Optional</em> <strong>string</strong></dd>
-
-<dt>isHtml</dt>
-<dd><em>Optional</em> <strong>bool</strong></dd>
-</dl>
 
 ## Change a Node
     POST /changeNode/{id}
