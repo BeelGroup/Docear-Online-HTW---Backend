@@ -1,5 +1,12 @@
 package org.docear.plugin.webservice.v10;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -11,8 +18,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import org.atmosphere.annotation.Broadcast;
-import org.atmosphere.annotation.Suspend;
 import org.docear.plugin.webservice.WebserviceController;
 import org.docear.plugin.webservice.v10.exceptions.MapNotFoundException;
 import org.docear.plugin.webservice.v10.exceptions.NodeNotFoundException;
@@ -22,11 +27,13 @@ import org.freeplane.features.map.MapChangeEvent;
 import org.freeplane.features.map.MapController;
 import org.freeplane.features.map.NodeChangeEvent;
 import org.freeplane.features.map.NodeModel;
+import org.freeplane.features.mapio.MapIO;
 import org.freeplane.features.mode.ModeController;
 
 @Path("/v1")
 public class Webservice {
 
+	//private final static String MINDMAP_PATH = System.getProperty("user.dir")+"\\resources\\mindmaps\\";
 	/**
 	 * returns a map as a JSON-Object
 	 * @param id ID of map
@@ -34,24 +41,85 @@ public class Webservice {
 	 * @return a map model
 	 */
 	@GET
-	@Path("map/{id}")
+	@Path("map/json/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public MapModel getMapModel(
 			@PathParam("id") String id, 
 			@QueryParam("nodeCount") @DefaultValue("-1") int nodeCount) throws MapNotFoundException {
 		boolean loadAllNodes = nodeCount == -1;
 		ModeController modeController = getModeController();
+
+
+
+		//find map
+		URL pathURL = Webservice.class.getResource("/files/mindmaps/"+id+".mm");
+		//		if(pathURL == null) {
+		//			throw new MapNotFoundException("Map with id '"+id+"' not found.");
+		//		}
+
+		try {
+			if(pathURL != null) {
+				MapIO mio = modeController.getExtension(MapIO.class);
+				mio.newMap(pathURL);
+			}
+
+			org.freeplane.features.map.MapModel freeplaneMap = modeController.getController().getMap();
+
+			MapModel mm = new MapModel(freeplaneMap,loadAllNodes);
+
+			if(!loadAllNodes) {
+				WebserviceHelper.loadNodesIntoModel(mm.root, nodeCount);
+			}
+
+			return mm;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	/**
+	 * returns a map as a JSON-Object
+	 * @param id ID of map
+	 * @param nodeCount soft limit of node count. When limit is reached, it only loads the outstanding child nodes of the current node.
+	 * @return a map model
+	 * @throws IOException 
+	 */
+	@GET
+	@Path("map/xml/{id}")
+	@Produces(MediaType.APPLICATION_XML)
+	public String getMapModelXml(
+			@PathParam("id") String id) throws MapNotFoundException, IOException {
+		ModeController modeController = getModeController();
+
+		//find map
+		InputStream in = Webservice.class.getResourceAsStream("/files/mindmaps/"+id+".mm");
+		//		if(in == null) {
+		//			throw new MapNotFoundException("Map with id '"+id+"' not found.");
+		//		}
+
+		
+		if(in == null) {
+			in = Webservice.class.getResourceAsStream("/files/mindmaps/1.mm");
+		}
+		
+		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+
+		String result = "";
+		String line;
+		while((line = reader.readLine()) != null) {
+			result += line+"\n";
+		}
+
+		reader.close();
+
 		org.freeplane.features.map.MapModel freeplaneMap = modeController.getController().getMap();
 		if(freeplaneMap == null)
 			throw new MapNotFoundException("Map with id '"+id+"' not found.");
 
-		MapModel mm = new MapModel(freeplaneMap,loadAllNodes);
 
-		if(!loadAllNodes) {
-			WebserviceHelper.loadNodesIntoModel(mm.root, nodeCount);
-		}
-
-		return mm;
+		return result;
 	}
 
 	/**
@@ -83,7 +151,7 @@ public class Webservice {
 	}
 
 	@POST
-	@Path("addNode/{parentNodeId}")
+	@Path("node/{parentNodeId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public DefaultNodeModel addNode(@PathParam("parentNodeId") String parentNodeId,
 			@QueryParam("nodeText") @DefaultValue("new Node") String nodeText, 
@@ -93,16 +161,16 @@ public class Webservice {
 		MapController mapController = modeController.getMapController();
 		//get map
 		org.freeplane.features.map.MapModel mm = modeController.getController().getMap();
-		
+
 		//get parent Node
 		NodeModel parentNode = mapController.getNodeFromID(parentNodeId);
-		
+
 		if(parentNode == null)
 			throw new NodeNotFoundException("Node with id '"+parentNodeId+"' not found");
-		
+
 		//create new node
 		NodeModel node = modeController.getMapController().newNode(nodeText, mm);
-		
+
 		//insert node
 		mapController.insertNodeIntoWithoutUndo(node, parentNode);
 		mapController.fireMapChanged(new MapChangeEvent(this, "node", "", ""));
@@ -127,6 +195,21 @@ public class Webservice {
 		//TODO do stuff
 		//Response.ok(new DefaultNodeModel(node)).
 		return new DefaultNodeModel(freeplaneNode,false);	
+	}
+
+
+	@DELETE
+	@Path("removeNode/{id}")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public String removeNode(@PathParam("id")String id) throws NodeNotFoundException {
+		ModeController modeController = getModeController();
+		NodeModel node = modeController.getMapController().getNodeFromID(id);
+		if(node == null)
+			throw new NodeNotFoundException("Node with id '"+id+"' not found");
+
+		node.removeFromParent();
+		node.fireNodeChanged(new NodeChangeEvent(node, "parent", "", ""));
+		return new Boolean(true).toString();
 	}
 
 	@GET
@@ -166,36 +249,8 @@ public class Webservice {
 		return node.getID();
 	}
 
-	@DELETE
-	@Path("removeNode/{id}")
-	@Produces({ MediaType.APPLICATION_JSON })
-	public String removeNode(@PathParam("id")String id) throws NodeNotFoundException {
-		ModeController modeController = getModeController();
-		NodeModel node = modeController.getMapController().getNodeFromID(id);
-		if(node == null)
-			throw new NodeNotFoundException("Node with id '"+id+"' not found");
-
-		node.removeFromParent();
-		node.fireNodeChanged(new NodeChangeEvent(node, "parent", "", ""));
-		return new Boolean(true).toString();
-	}
 
 	// testing methods
-
-	@Suspend(contentType = "application/json")
-	@GET
-	public String suspend() {
-		return "";
-	}
-
-
-	@Broadcast(writeEntity = false)
-	@POST
-	@Produces("application/json")
-	public Response broadcast(Message message) {
-		return new Response(message.author, message.message);
-	}
-
 	@GET
 	@Path("addNodeToRootNode/query")
 	@Produces({ MediaType.APPLICATION_JSON })

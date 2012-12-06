@@ -5,20 +5,14 @@ import java.io.IOException;
 import java.util.logging.Level;
 
 import org.docear.plugin.webservice.v10.Webservice;
-import org.docear.plugin.webservice.v10.model.EdgeModel;
-import org.docear.plugin.webservice.v10.model.RootNodeModel;
 import org.freeplane.core.util.LogUtils;
-import org.freeplane.features.map.MapModel;
-import org.freeplane.features.map.NodeModel;
 import org.freeplane.features.mode.ModeController;
 import org.freeplane.features.ui.INodeViewLifeCycleListener;
 import org.osgi.framework.BundleContext;
 
 import com.sun.jersey.api.container.httpserver.HttpServerFactory;
 import com.sun.jersey.api.core.ClassNamesResourceConfig;
-import com.sun.jersey.api.core.PackagesResourceConfig;
 import com.sun.jersey.api.core.ResourceConfig;
-import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.net.httpserver.HttpServer;
 
 
