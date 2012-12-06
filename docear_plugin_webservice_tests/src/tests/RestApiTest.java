@@ -49,7 +49,7 @@ public class RestApiTest {
 	public void getMapAsJsonTest() {
 		WebResource wr = client.resource("http://localhost:8080/rest/v1");
 
-		WebResource getMapResource = wr.path("map").path("json").path("NOTWORKING").queryParam("nodeCount", "5");
+		WebResource getMapResource = wr.path("map").path("json").path("1").queryParam("nodeCount", "5");
 		ClientResponse cr = getMapResource.accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
 		
@@ -73,7 +73,7 @@ public class RestApiTest {
 	public void getAddAndRemoveNodeToFirstRightChild() {
 		WebResource wr = client.resource("http://localhost:8080/rest/v1");
 		
-		MapModel map = wr.path("map").path("json").path("NOTWORKING").queryParam("nodeCount", "5").get(MapModel.class);
+		MapModel map = wr.path("map").path("json").path("1").queryParam("nodeCount", "5").get(MapModel.class);
 		DefaultNodeModel node =  map.root.rightChildren.get(0);
 		
 		WebResource addNodeResource = wr.path("node").path(node.id).queryParam("nodeText", "myNode");

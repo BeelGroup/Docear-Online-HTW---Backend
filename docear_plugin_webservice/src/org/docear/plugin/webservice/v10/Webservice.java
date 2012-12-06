@@ -1,9 +1,10 @@
 package org.docear.plugin.webservice.v10;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 
 import javax.ws.rs.Consumes;
@@ -26,11 +27,13 @@ import org.freeplane.features.map.MapChangeEvent;
 import org.freeplane.features.map.MapController;
 import org.freeplane.features.map.NodeChangeEvent;
 import org.freeplane.features.map.NodeModel;
+import org.freeplane.features.mapio.MapIO;
 import org.freeplane.features.mode.ModeController;
 
 @Path("/v1")
 public class Webservice {
 
+	//private final static String MINDMAP_PATH = System.getProperty("user.dir")+"\\resources\\mindmaps\\";
 	/**
 	 * returns a map as a JSON-Object
 	 * @param id ID of map
@@ -45,19 +48,37 @@ public class Webservice {
 			@QueryParam("nodeCount") @DefaultValue("-1") int nodeCount) throws MapNotFoundException {
 		boolean loadAllNodes = nodeCount == -1;
 		ModeController modeController = getModeController();
-		org.freeplane.features.map.MapModel freeplaneMap = modeController.getController().getMap();
-		if(freeplaneMap == null)
-			throw new MapNotFoundException("Map with id '"+id+"' not found.");
 
-		MapModel mm = new MapModel(freeplaneMap,loadAllNodes);
 
-		if(!loadAllNodes) {
-			WebserviceHelper.loadNodesIntoModel(mm.root, nodeCount);
+
+		//find map
+		URL pathURL = Webservice.class.getResource("/files/mindmaps/"+id+".mm");
+		//		if(pathURL == null) {
+		//			throw new MapNotFoundException("Map with id '"+id+"' not found.");
+		//		}
+
+		try {
+			if(pathURL != null) {
+				MapIO mio = modeController.getExtension(MapIO.class);
+				mio.newMap(pathURL);
+			}
+
+			org.freeplane.features.map.MapModel freeplaneMap = modeController.getController().getMap();
+
+			MapModel mm = new MapModel(freeplaneMap,loadAllNodes);
+
+			if(!loadAllNodes) {
+				WebserviceHelper.loadNodesIntoModel(mm.root, nodeCount);
+			}
+
+			return mm;
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
-		return mm;
+		return null;
 	}
-	
+
 	/**
 	 * returns a map as a JSON-Object
 	 * @param id ID of map
@@ -71,21 +92,33 @@ public class Webservice {
 	public String getMapModelXml(
 			@PathParam("id") String id) throws MapNotFoundException, IOException {
 		ModeController modeController = getModeController();
-		MapController mapController = modeController.getMapController();
-		URL location = modeController.getController().getMap().getURL();
-		File f = new File(location.getFile());
-		BufferedReader reader = new BufferedReader(new FileReader(f));
+
+		//find map
+		InputStream in = Webservice.class.getResourceAsStream("/files/mindmaps/"+id+".mm");
+		//		if(in == null) {
+		//			throw new MapNotFoundException("Map with id '"+id+"' not found.");
+		//		}
+
 		
+		if(in == null) {
+			in = Webservice.class.getResourceAsStream("/files/mindmaps/1.mm");
+		}
+		
+		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+
 		String result = "";
 		String line;
 		while((line = reader.readLine()) != null) {
 			result += line+"\n";
 		}
-		
+
+		reader.close();
+
 		org.freeplane.features.map.MapModel freeplaneMap = modeController.getController().getMap();
 		if(freeplaneMap == null)
 			throw new MapNotFoundException("Map with id '"+id+"' not found.");
-		
+
+
 		return result;
 	}
 
@@ -128,16 +161,16 @@ public class Webservice {
 		MapController mapController = modeController.getMapController();
 		//get map
 		org.freeplane.features.map.MapModel mm = modeController.getController().getMap();
-		
+
 		//get parent Node
 		NodeModel parentNode = mapController.getNodeFromID(parentNodeId);
-		
+
 		if(parentNode == null)
 			throw new NodeNotFoundException("Node with id '"+parentNodeId+"' not found");
-		
+
 		//create new node
 		NodeModel node = modeController.getMapController().newNode(nodeText, mm);
-		
+
 		//insert node
 		mapController.insertNodeIntoWithoutUndo(node, parentNode);
 		mapController.fireMapChanged(new MapChangeEvent(this, "node", "", ""));
@@ -178,7 +211,7 @@ public class Webservice {
 		node.fireNodeChanged(new NodeChangeEvent(node, "parent", "", ""));
 		return new Boolean(true).toString();
 	}
-	
+
 	@GET
 	@Produces({ MediaType.TEXT_PLAIN  })
 	@Path("search/mapId/{mapId}/query/{query}")
