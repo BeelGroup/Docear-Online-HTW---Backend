@@ -1,10 +1,13 @@
 package org.docear.plugin.webservice.v10;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.net.URL;
 
 import javax.ws.rs.Consumes;
@@ -12,11 +15,14 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.docear.plugin.webservice.WebserviceController;
 import org.docear.plugin.webservice.v10.exceptions.MapNotFoundException;
@@ -25,15 +31,21 @@ import org.docear.plugin.webservice.v10.model.DefaultNodeModel;
 import org.docear.plugin.webservice.v10.model.MapModel;
 import org.freeplane.features.map.MapChangeEvent;
 import org.freeplane.features.map.MapController;
+import org.freeplane.features.map.MapWriter;
 import org.freeplane.features.map.NodeChangeEvent;
 import org.freeplane.features.map.NodeModel;
 import org.freeplane.features.mapio.MapIO;
 import org.freeplane.features.mode.ModeController;
+import org.freeplane.features.styles.MapViewLayout;
+
+import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.multipart.FormDataParam;
+import com.sun.net.httpserver.HttpServer;
 
 @Path("/v1")
+@Produces(MediaType.APPLICATION_JSON)
 public class Webservice {
 
-	//private final static String MINDMAP_PATH = System.getProperty("user.dir")+"\\resources\\mindmaps\\";
 	/**
 	 * returns a map as a JSON-Object
 	 * @param id ID of map
@@ -80,6 +92,52 @@ public class Webservice {
 	}
 
 	/**
+	 * returns the current map as a JSON-Object
+	 * @param id ID of map
+	 * @param nodeCount soft limit of node count. When limit is reached, it only loads the outstanding child nodes of the current node.
+	 * @return a map model
+	 */
+	@GET
+	@Path("map.json")
+	@Produces(MediaType.APPLICATION_JSON)
+	public MapModel getOpenMapAsJson( 
+			@QueryParam("nodeCount") @DefaultValue("-1") int nodeCount) throws MapNotFoundException {
+		boolean loadAllNodes = nodeCount == -1;
+		ModeController modeController = getModeController();
+
+
+		org.freeplane.features.map.MapModel freeplaneMap = modeController.getController().getMap();
+
+		MapModel mm = new MapModel(freeplaneMap,loadAllNodes);
+		if(!loadAllNodes) {
+			WebserviceHelper.loadNodesIntoModel(mm.root, nodeCount);
+		}
+
+		return mm;
+	}
+
+	/**
+	 * returns a map as a JSON-Object
+	 * @param id ID of map
+	 * @param nodeCount soft limit of node count. When limit is reached, it only loads the outstanding child nodes of the current node.
+	 * @return a map model
+	 * @throws IOException 
+	 */
+	@GET
+	@Path("map.xml")
+	@Produces(MediaType.APPLICATION_ATOM_XML)
+	public String getOpenMapAsXml() throws MapNotFoundException, IOException {
+		ModeController modeController = getModeController();
+		org.freeplane.features.map.MapModel freeplaneMap = modeController.getController().getMap();
+
+		StringWriter writer = new StringWriter();
+		modeController.getMapController().getMapWriter().writeMapAsXml(freeplaneMap, writer, MapWriter.Mode.EXPORT, true, true);
+
+
+		return writer.toString();
+	}
+
+	/**
 	 * returns a map as a JSON-Object
 	 * @param id ID of map
 	 * @param nodeCount soft limit of node count. When limit is reached, it only loads the outstanding child nodes of the current node.
@@ -99,11 +157,11 @@ public class Webservice {
 		//			throw new MapNotFoundException("Map with id '"+id+"' not found.");
 		//		}
 
-		
+
 		if(in == null) {
 			in = Webservice.class.getResourceAsStream("/files/mindmaps/1.mm");
 		}
-		
+
 		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
 		String result = "";
@@ -120,6 +178,45 @@ public class Webservice {
 
 
 		return result;
+	}
+
+
+	@PUT
+	@Path("openMindmap")
+	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
+	public Response openMindmap(InputStream uploadedInputStream) {
+
+		try {
+			String folder = System.getProperty("java.io.tmpdir");
+			System.out.println(folder);
+			String filename = "1.mm";//fileDetail.getFileName();
+			File file = new File(folder+filename);
+
+
+			byte[] buffer = new byte[1024];
+			FileOutputStream out = new FileOutputStream(file);
+
+			int length;
+			while((length = uploadedInputStream.read(buffer, 0, buffer.length)) != -1) {
+				out.write(buffer, 0, length);
+			}
+
+			out.flush();
+			out.close();
+
+			ModeController modeController = getModeController();
+			URL pathURL = file.toURI().toURL();
+
+
+			if(pathURL != null) {
+				MapIO mio = modeController.getExtension(MapIO.class);
+				mio.newMap(pathURL);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return Response.status(200).entity("File uploaded succesfully").build();
 	}
 
 	/**

@@ -1,10 +1,17 @@
 package tests;
+import static org.fest.assertions.Assertions.assertThat;
+
+import java.io.File;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 
-
+import org.docear.plugin.webservice.v10.Webservice;
 import org.docear.plugin.webservice.v10.model.DefaultNodeModel;
 import org.docear.plugin.webservice.v10.model.MapModel;
-import static org.fest.assertions.Assertions.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +22,7 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.json.JSONConfiguration;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 
 public class RestApiTest {
@@ -89,6 +97,34 @@ public class RestApiTest {
 		
 		Boolean deleted = Boolean.valueOf(wr.path("removeNode").path(newNode.id).delete(String.class));
 		assertThat(deleted).isTrue();
+		
+	}
+	
+	@Test
+	public void sendMindmapToApplicationAddANodeAndReturnJsonMap() throws URISyntaxException {
+		WebResource wr = client.resource("http://localhost:8080/rest/v1");
+		WebResource sendMapResource = wr.path("openMindmap");
+		InputStream in = Webservice.class.getResourceAsStream("/files/mindmaps/1.mm");
+		URL pathURL = Webservice.class.getResource("/files/mindmaps/1.mm");
+		File f = new File( pathURL.toURI());
+		
+		String contentDeposition = "attachement; filename=\"1.mm\"";
+		assertThat(f).isNotNull();
+		
+//		MultivaluedMap formData = new MultivaluedMapImpl();
+//		formData.add("file", in);
+		ClientResponse response = sendMapResource.type(MediaType.APPLICATION_OCTET_STREAM_TYPE)
+				.header("Content-Deposition", contentDeposition)
+				.put(ClientResponse.class, in);
+		
+		assertThat(response.getStatus()).isEqualTo(200);
+		
+		String nodeId = wr.path("addNodeToRootNode").accept(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+		assertThat(nodeId).startsWith("ID_");
+		
+		MapModel model = wr.path("map.json").accept(MediaType.APPLICATION_JSON_TYPE).get(MapModel.class);
+		assertThat(model).isNotNull();
+		
 		
 	}
 
