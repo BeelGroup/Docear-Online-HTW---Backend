@@ -1,6 +1,7 @@
 *.prefs
 *.class
 bin/
+dist
 
 #editor backup files
 *~
