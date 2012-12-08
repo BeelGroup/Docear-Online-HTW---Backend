@@ -2,7 +2,12 @@
 *.class
 bin/
 
+#editor backup files
 *~
+
+#local IDE files
+.idea
+*.iml
 
 #Docear Desktop
 docear_framework
