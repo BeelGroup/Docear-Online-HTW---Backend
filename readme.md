@@ -4,6 +4,7 @@
 1. Make sure the "docear-osgi"-configuration uses the docear.plugin.webservice - bundle
 1. run "docear-osgi"
 
+
 # Usage
 
 The Following REST-calls are currently implemented
