@@ -1,0 +1,1 @@
+nohup ssh local@docear2.f4.htw-berlin.de "cd /local_home/docear/ && bash run.sh" &
