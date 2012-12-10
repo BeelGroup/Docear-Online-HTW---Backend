@@ -60,7 +60,7 @@ abstract public class NodeModelBase {
 			loadChildren(true);
 		}
 	}
-	
+
 	private String[] getIconArray(org.freeplane.features.map.NodeModel freeplaneNode) {
 		String[] iconNames = new String[freeplaneNode.getIcons().size()];
 		int count = 0;
