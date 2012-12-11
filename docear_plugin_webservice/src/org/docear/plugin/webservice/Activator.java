@@ -23,7 +23,7 @@ public class Activator extends DocearService implements BundleActivator {
 	public void startService(BundleContext context, ModeController modeController) {
 //		httpServiceTracker = new HttpServiceTracker(context);
 //		httpServiceTracker.open();
-
+		
 		new WebserviceController(modeController,context);
 	}
 

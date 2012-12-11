@@ -1,4 +1,4 @@
-<map version="docear 1.0" dcr_id="1354749378745_eqv7m1tl2vyuxudrlgigsdgsd" dcr_uri="workspace:/../../Temp/Docear/1.mm">
+<map version="docear 1.0" dcr_id="1354827628844_lfbikuevlko42oey4fylpz15" dcr_uri="workspace:/../../Docear/HTW-Backend/docear_plugin_webservice/src/files/mindmaps/1.mm">
 <!--To view this file, download Docear - The Academic Literature Suite from http://www.docear.org -->
 <node TEXT="foo2" FOLDED="false" ID="ID_1723255651" CREATED="1283093380553" MODIFIED="1353101417444" LINK="#ID_510509733"><hook NAME="MapStyle" zoom="0.825">
     <properties show_icon_for_attributes="true" show_note_icons="true"/>
@@ -92,7 +92,7 @@
 </node>
 <node TEXT="&#x201c;I&#x2019;m not a big fan of this area of research [&#x2026;]. I know &#xd;&#xa;it&#x2019;s in the call for papers, but I think that&#x2019;s a mistake.&#x201d; " ID="ID_721576223" CREATED="1345719440556" MODIFIED="1353268192452" LINK="workspace:/literature_repository/Example%20PDFs/Academic%20search%20engine%20spam%20and%20Google%20Scholars%20resilience%20against%20it.pdf" HGAP="95" VSHIFT="201">
 <arrowlink SHAPE="CUBIC_CURVE" COLOR="#000000" WIDTH="2" TRANSPARENCY="80" FONT_SIZE="9" FONT_FAMILY="SansSerif" DESTINATION="ID_15972978" STARTINCLINATION="437;-87;" ENDINCLINATION="423;0;" STARTARROW="NONE" ENDARROW="DEFAULT"/>
-<pdf_annotation type="HIGHLIGHTED_TEXT" page="3" object_number="682" generation_number="0" document_hash="46F2B1E4B9CC1831D02B0683233ACB0228C9EE679DA379BB0804FE0FD9B624"/>
+<pdf_annotation type="HIGHLIGHTED_TEXT" page="3" object_number="682" generation_number="0"/>
 </node>
 <node TEXT="awfnawfn" ID="ID_725043214" CREATED="1351777674165" MODIFIED="1353101432809" HGAP="94" VSHIFT="38">
 <hook NAME="SummaryNode"/>

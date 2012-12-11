@@ -1,14 +1,15 @@
 package org.docear.plugin.webservice.v10;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -20,7 +21,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -36,15 +36,17 @@ import org.freeplane.features.map.NodeChangeEvent;
 import org.freeplane.features.map.NodeModel;
 import org.freeplane.features.mapio.MapIO;
 import org.freeplane.features.mode.ModeController;
-import org.freeplane.features.styles.MapViewLayout;
 
-import com.sun.jersey.core.header.FormDataContentDisposition;
-import com.sun.jersey.multipart.FormDataParam;
-import com.sun.net.httpserver.HttpServer;
+import com.sun.jersey.api.client.ClientResponse.Status;
 
 @Path("/v1")
 @Produces(MediaType.APPLICATION_JSON)
 public class Webservice {
+
+	static final Map<String, URL> openMapUrls;
+	static {
+		openMapUrls = new HashMap<String, URL>();
+	}
 
 	/**
 	 * returns a map as a JSON-Object
@@ -55,86 +57,36 @@ public class Webservice {
 	@GET
 	@Path("map/json/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public MapModel getMapModel(
+	public Response getMapModel(
 			@PathParam("id") String id, 
-			@QueryParam("nodeCount") @DefaultValue("-1") int nodeCount) throws MapNotFoundException {
+			@QueryParam("nodeCount") @DefaultValue("-1") int nodeCount) 
+					throws MapNotFoundException {
+
 		boolean loadAllNodes = nodeCount == -1;
 		ModeController modeController = getModeController();
-
-
-
-		//find map
-		URL pathURL = Webservice.class.getResource("/files/mindmaps/"+id+".mm");
-		//		if(pathURL == null) {
-		//			throw new MapNotFoundException("Map with id '"+id+"' not found.");
-		//		}
 
 		try {
-			if(pathURL != null) {
-				MapIO mio = modeController.getExtension(MapIO.class);
-				mio.newMap(pathURL);
+			if(!WebserviceHelper.selectMap(id)) {
+				return Response.status(Status.BAD_REQUEST).entity("Map not found").build();
 			}
-
-			org.freeplane.features.map.MapModel freeplaneMap = modeController.getController().getMap();
-
-			MapModel mm = new MapModel(freeplaneMap,loadAllNodes);
-
-			if(!loadAllNodes) {
-				WebserviceHelper.loadNodesIntoModel(mm.root, nodeCount);
-			}
-
-			return mm;
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch(Exception e) {
+			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build();
 		}
-
-		return null;
-	}
-
-	/**
-	 * returns the current map as a JSON-Object
-	 * @param id ID of map
-	 * @param nodeCount soft limit of node count. When limit is reached, it only loads the outstanding child nodes of the current node.
-	 * @return a map model
-	 */
-	@GET
-	@Path("map.json")
-	@Produces(MediaType.APPLICATION_JSON)
-	public MapModel getOpenMapAsJson( 
-			@QueryParam("nodeCount") @DefaultValue("-1") int nodeCount) throws MapNotFoundException {
-		boolean loadAllNodes = nodeCount == -1;
-		ModeController modeController = getModeController();
 
 
 		org.freeplane.features.map.MapModel freeplaneMap = modeController.getController().getMap();
+		if(freeplaneMap == null) { //when not mapMode
+			return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Current mode not MapMode").build();
+		}
 
+		//create the MapModel for JSON
 		MapModel mm = new MapModel(freeplaneMap,loadAllNodes);
+
 		if(!loadAllNodes) {
 			WebserviceHelper.loadNodesIntoModel(mm.root, nodeCount);
 		}
 
-		return mm;
-	}
-
-	/**
-	 * returns a map as a JSON-Object
-	 * @param id ID of map
-	 * @param nodeCount soft limit of node count. When limit is reached, it only loads the outstanding child nodes of the current node.
-	 * @return a map model
-	 * @throws IOException 
-	 */
-	@GET
-	@Path("map.xml")
-	@Produces(MediaType.APPLICATION_ATOM_XML)
-	public String getOpenMapAsXml() throws MapNotFoundException, IOException {
-		ModeController modeController = getModeController();
-		org.freeplane.features.map.MapModel freeplaneMap = modeController.getController().getMap();
-
-		StringWriter writer = new StringWriter();
-		modeController.getMapController().getMapWriter().writeMapAsXml(freeplaneMap, writer, MapWriter.Mode.EXPORT, true, true);
-
-
-		return writer.toString();
+		return Response.ok(mm).build();
 	}
 
 	/**
@@ -147,76 +99,116 @@ public class Webservice {
 	@GET
 	@Path("map/xml/{id}")
 	@Produces(MediaType.APPLICATION_XML)
-	public String getMapModelXml(
-			@PathParam("id") String id) throws MapNotFoundException, IOException {
+	public Response getMapModelXml(
+			@PathParam("id") String id) {
 		ModeController modeController = getModeController();
 
-		//find map
-		InputStream in = Webservice.class.getResourceAsStream("/files/mindmaps/"+id+".mm");
-		//		if(in == null) {
-		//			throw new MapNotFoundException("Map with id '"+id+"' not found.");
-		//		}
-
-
-		if(in == null) {
-			in = Webservice.class.getResourceAsStream("/files/mindmaps/1.mm");
+		try {
+			if(!WebserviceHelper.selectMap(id)) {
+				return Response.status(Status.BAD_REQUEST).entity("Map not found").build();
+			}
+		} catch(Exception e) {
+			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build();
 		}
-
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-
-		String result = "";
-		String line;
-		while((line = reader.readLine()) != null) {
-			result += line+"\n";
-		}
-
-		reader.close();
 
 		org.freeplane.features.map.MapModel freeplaneMap = modeController.getController().getMap();
-		if(freeplaneMap == null)
-			throw new MapNotFoundException("Map with id '"+id+"' not found.");
+		if(freeplaneMap == null) { //when not mapMode
+			return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Current mode not MapMode").build();
+		}
 
+		StringWriter writer = new StringWriter();
+		try {
+			modeController.getMapController().getMapWriter().writeMapAsXml(freeplaneMap, writer, MapWriter.Mode.EXPORT, true, true);
+		} catch (IOException e) {
+			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build();
+		}
 
-		return result;
+		return Response.ok(writer.toString()).build();
 	}
 
+	/**
+	 * closes a map on the server
+	 * @param id
+	 * @return
+	 */
+	@DELETE
+	@Path("map/{id}")
+	public Response closeMap(@PathParam("id") String id) {
+
+		try {
+			WebserviceHelper.closeMap(id);
+			return Response.ok().build();
+		} catch (Exception e) {
+			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build();
+		}
+	}
 
 	@PUT
-	@Path("openMindmap")
+	@Path("map")
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	public Response openMindmap(InputStream uploadedInputStream) {
 
 		try {
-			String folder = System.getProperty("java.io.tmpdir");
-			System.out.println(folder);
-			String filename = "1.mm";//fileDetail.getFileName();
-			File file = new File(folder+filename);
+			//create file
+			Random ran = new Random();
+			String filename = ""+System.currentTimeMillis()+ran.nextInt(100);
+			File file = File.createTempFile(filename, ".mm");
+			file.deleteOnExit();
 
-
-			byte[] buffer = new byte[1024];
+			//fill file from inputstream
 			FileOutputStream out = new FileOutputStream(file);
-
+			byte[] buffer = new byte[1024];
 			int length;
 			while((length = uploadedInputStream.read(buffer, 0, buffer.length)) != -1) {
 				out.write(buffer, 0, length);
 			}
-
 			out.flush();
 			out.close();
 
-			ModeController modeController = getModeController();
+			//put map in openMap Collection
+			String id = WebserviceHelper.getMapIdFromFile(file);
 			URL pathURL = file.toURI().toURL();
-
-
-			if(pathURL != null) {
-				MapIO mio = modeController.getExtension(MapIO.class);
-				mio.newMap(pathURL);
-			}
+			openMapUrls.put(id, pathURL);
+			
+			//open map
+			ModeController modeController = getModeController();
+			MapIO mio = modeController.getExtension(MapIO.class);
+			mio.newMap(pathURL);
 		} catch (Exception e) {
-			e.printStackTrace();
+			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build();
 		}
 
 		return Response.status(200).entity("File uploaded succesfully").build();
+	}
+
+	@GET
+	@Path("close")
+	public Response closeServer() {
+		
+		Set<String> ids = openMapUrls.keySet(); 
+		for(String mapId : ids) {
+			try {
+				WebserviceHelper.closeMap(mapId);
+			} catch (Exception e) {
+				
+			}
+		}
+		
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				System.exit(0);
+
+			}
+		}).start();
+
+		return Response.ok().build();
 	}
 
 	/**
@@ -228,15 +220,18 @@ public class Webservice {
 	@GET
 	@Path("node/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public DefaultNodeModel getNode(
+	public Response getNode(
 			@PathParam("id") String id, 
-			@QueryParam("nodeCount") @DefaultValue("-1") int nodeCount) throws NodeNotFoundException {
+			@QueryParam("nodeCount") @DefaultValue("-1") int nodeCount) {
 		ModeController modeController = getModeController();
 		boolean loadAllNodes = nodeCount == -1;
 
+		
 		NodeModel freeplaneNode = modeController.getMapController().getNodeFromID(id);
-		if(freeplaneNode == null)
-			throw new NodeNotFoundException("Node with id '"+id+"' not found.");
+		if(freeplaneNode == null) {
+			return Response.status(Status.BAD_REQUEST)
+					.entity(new NodeNotFoundException("Node with id '"+id+"' not found.")).build();
+		}
 
 		DefaultNodeModel node = new DefaultNodeModel(freeplaneNode,loadAllNodes);
 
@@ -244,7 +239,7 @@ public class Webservice {
 			WebserviceHelper.loadNodesIntoModel(node, nodeCount);
 		}
 
-		return node;
+		return Response.ok(node).build();
 	}
 
 	@POST
@@ -277,7 +272,7 @@ public class Webservice {
 	}
 
 	@POST
-	@Path("changeNode/{nodeId}")
+	@Path("node/{nodeId}")
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({ MediaType.APPLICATION_JSON })
 	public DefaultNodeModel changeNode(DefaultNodeModel node) throws NodeNotFoundException {
@@ -309,114 +304,11 @@ public class Webservice {
 		return new Boolean(true).toString();
 	}
 
-	@GET
-	@Produces({ MediaType.TEXT_PLAIN  })
-	@Path("search/mapId/{mapId}/query/{query}")
-	public String search(@PathParam("mapId") Long mapId, @PathParam("query") String query) {
-		return String.format("mapId = %s, searchString = %s", mapId, query);
-	}
-
-	@GET
-	@Path("addNodeToRootNode")
-	@Produces({ MediaType.APPLICATION_JSON })
-	public String addNodeToRootNode( @DefaultValue("Sample Text") @QueryParam("text")String text) {
-		ModeController modeController = getModeController();
-		org.freeplane.features.map.MapModel mm = getOpenMap();
-		NodeModel root = modeController.getMapController().getRootNode();
-		NodeModel node = modeController.getMapController().newNode(text, mm);
-		root.insert(node);
-		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, "node", "", ""));
-		node.createID();
-		return node.getID();
-	}	
-
-
-	@GET
-	@Path("addNodeToSelectedNode/query")
-	@Produces({ MediaType.APPLICATION_JSON })
-	public String addNodeToSelectedNodeQuery(@QueryParam("text")String text) {
-		ModeController modeController = getModeController();
-		org.freeplane.features.map.MapModel mm = getOpenMap();
-		NodeModel selectedNode = modeController.getMapController().getSelectedNodes().iterator().next();
-		if (text == null) text = "New Node.";
-		NodeModel node = modeController.getMapController().newNode(text, mm);
-		selectedNode.insert(node);
-		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, "node", "", ""));
-		node.createID();
-		return node.getID();
-	}
-
-
-	// testing methods
-	@GET
-	@Path("addNodeToRootNode/query")
-	@Produces({ MediaType.APPLICATION_JSON })
-	public String addNodeToRootNodeQuery(@QueryParam("text")String text) {
-		ModeController modeController = getModeController();
-		org.freeplane.features.map.MapModel mm = getOpenMap();
-		NodeModel root = modeController.getMapController().getRootNode();
-		if (text == null) text = "New Node.";
-		NodeModel node = modeController.getMapController().newNode(text, mm);
-		root.insert(node);
-		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, "node", "", ""));
-		node.createID();
-		return node.getID();
-	}
-
-	@GET
-	@Path("addNodeToSelectedNode")
-	@Produces({ MediaType.APPLICATION_JSON })
-	public String addNodeToSelectedNode(@DefaultValue("Sample Text") @QueryParam("text")String text) {
-		ModeController modeController = getModeController();
-		org.freeplane.features.map.MapModel mm = getOpenMap();
-		NodeModel selectedNode = modeController.getMapController().getSelectedNodes().iterator().next();
-		NodeModel node = modeController.getMapController().newNode(text, mm);
-		selectedNode.insert(node);
-		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, "node", "", ""));
-		node.createID();
-		return node.getID();
-	}
-
-	@GET
-	@Path("sampleNode")
-	@Produces({ MediaType.APPLICATION_JSON })
-	public Boolean sampleNode() {
-		ModeController modeController = getModeController();
-
-
-
-		org.freeplane.features.map.MapModel mm = getOpenMap();
-		NodeModel root = modeController.getMapController().getRootNode();
-		modeController.getMapController().select(modeController.getMapController().getRootNode());
-		NodeModel node = modeController.getMapController().newNode("Sample Text", mm);
-		modeController.getMapController().insertNodeIntoWithoutUndo(node, root);
-		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, node, null, node));
-		//					AFreeplaneAction action = modeController.getAction("NewChildAction");
-		//					action.actionPerformed(null);
-
-		node.setUserObject("3 Seconds to deletion");
-		node.fireNodeChanged(new NodeChangeEvent(node, "userObject", "blub", "bla"));
-		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, node, null, node));
-		try {Thread.sleep(1000);} catch(Throwable t) {}
-
-		node.setUserObject("2 Seconds to deletion");
-		node.fireNodeChanged(new NodeChangeEvent(node, "userObject", "blub", "bla"));
-		try {Thread.sleep(1000);} catch(Throwable t) {}
-		node.setUserObject("1 Seconds to deletion");
-		node.fireNodeChanged(new NodeChangeEvent(node, "userObject", "blub", "bla"));
-		try {Thread.sleep(1000);} catch(Throwable t) {}
-
-		node.removeFromParent();
-		modeController.getMapController().fireMapChanged(new MapChangeEvent(this, node, null, node));
-		try {Thread.sleep(3000);} catch(Throwable t) {}		
-		return Boolean.TRUE;
-	}
-
-	private ModeController getModeController() {
+	static ModeController getModeController() {
 		return WebserviceController.getInstance().getModeController();
 	}
 
-	private org.freeplane.features.map.MapModel getOpenMap() {
+	static org.freeplane.features.map.MapModel getOpenMap() {
 		ModeController modeController = getModeController();
 		return modeController.getMapController().getRootNode().getMap();
 	}

@@ -2,9 +2,11 @@ package org.docear.plugin.webservice;
 
 import java.awt.Container;
 import java.io.IOException;
+import java.util.Scanner;
 import java.util.logging.Level;
 
 import org.docear.plugin.webservice.v10.Webservice;
+import org.docear.plugin.webservice.v10.WebserviceDeprecated;
 import org.freeplane.core.util.LogUtils;
 import org.freeplane.features.mode.ModeController;
 import org.freeplane.features.ui.INodeViewLifeCycleListener;
@@ -31,6 +33,11 @@ public class WebserviceController {
 		webserviceController = this;
 		this.modeController = modeController;
 		LogUtils.info("starting Webservice Plugin...");
+		
+		int port = 8080;
+		try {
+			port = Integer.parseInt(System.getenv("webservice_port"));
+		} catch (Exception e) {}
 	    
 		this.registerListeners();
 		
@@ -44,10 +51,9 @@ public class WebserviceController {
 					);
 			
 			
-			server = HttpServerFactory.create( "http://localhost:8080/rest",rc );
+			System.out.println("Webservice address: http://localhost:"+port+"/rest");
+			server = HttpServerFactory.create( "http://localhost:"+port+"/rest",rc );
 			server.start();
-			
-			
 			
 		} catch (IOException e) {
 			LogUtils.getLogger().log(Level.SEVERE, "Webservice could not be started.",e);

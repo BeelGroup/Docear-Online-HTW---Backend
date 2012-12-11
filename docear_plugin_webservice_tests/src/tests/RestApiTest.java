@@ -7,9 +7,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 
 import org.docear.plugin.webservice.v10.Webservice;
+import org.docear.plugin.webservice.v10.WebserviceHelper;
 import org.docear.plugin.webservice.v10.model.DefaultNodeModel;
 import org.docear.plugin.webservice.v10.model.MapModel;
 import org.junit.After;
@@ -22,7 +22,6 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.json.JSONConfiguration;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 
 public class RestApiTest {
@@ -56,7 +55,7 @@ public class RestApiTest {
 	@Test
 	public void getMapAsJsonTest() {
 		WebResource wr = client.resource("http://localhost:8080/rest/v1");
-
+		
 		WebResource getMapResource = wr.path("map").path("json").path("1").queryParam("nodeCount", "5");
 		ClientResponse cr = getMapResource.accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
@@ -125,6 +124,40 @@ public class RestApiTest {
 		MapModel model = wr.path("map.json").accept(MediaType.APPLICATION_JSON_TYPE).get(MapModel.class);
 		assertThat(model).isNotNull();
 		
+		
+	}
+	
+	@Test
+	public void selectOpenedMapTest() throws URISyntaxException {
+		WebResource wr = client.resource("http://localhost:8080/rest/v1");
+		
+		// 1. send a map
+		WebResource sendMapResource = wr.path("openMindmap");
+		InputStream in = Webservice.class.getResourceAsStream("/files/mindmaps/2.mm");
+		URL pathURL = Webservice.class.getResource("/files/mindmaps/2.mm");
+		File f = new File( pathURL.toURI());
+		
+		String mapId = WebserviceHelper.getMapIdFromFile(f);
+		
+		String contentDeposition = "attachement; filename=\"2.mm\"";
+		assertThat(f).isNotNull();
+		
+		ClientResponse response = sendMapResource.type(MediaType.APPLICATION_OCTET_STREAM_TYPE)
+				.header("Content-Deposition", contentDeposition)
+				.put(ClientResponse.class, in);
+		
+		assertThat(response.getStatus()).isEqualTo(200);		
+		
+		// 2. select another map
+		response = wr.path("map").path("json").path("1").get(ClientResponse.class);
+		assertThat(response.getStatus()).isEqualTo(200);
+		
+		// 3. reselect first map
+		response = wr.path("selectMindmap").path(mapId).put(ClientResponse.class);
+		assertThat(response.getStatus()).isEqualTo(200);
+		
+		DefaultNodeModel node = wr.path("node").path("ID_1247776391").get(DefaultNodeModel.class);
+		assertThat(node.nodeText).isEqualTo("test");
 		
 	}
 
