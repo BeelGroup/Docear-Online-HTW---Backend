@@ -73,7 +73,7 @@ public class Webservice {
 
 		try {
 			if(!WebserviceHelper.selectMap(id)) {
-				return Response.status(Status.BAD_REQUEST).entity("Map not found").build();
+				return Response.status(Status.NOT_FOUND).entity("Map not found").build();
 			}
 		} catch(Exception e) {
 			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build();
@@ -111,7 +111,7 @@ public class Webservice {
 
 		try {
 			if(!WebserviceHelper.selectMap(id)) {
-				return Response.status(Status.BAD_REQUEST).entity("Map not found").build();
+				return Response.status(Status.NOT_FOUND).entity("Map not found").build();
 			}
 		} catch(Exception e) {
 			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build();
