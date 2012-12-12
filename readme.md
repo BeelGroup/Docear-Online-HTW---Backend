@@ -9,6 +9,11 @@
 
 The Following REST-calls are currently implemented
 
+# Demo
+* a mindmap as JSON http://docear2.f4.htw-berlin.de:8080/rest/v1/map/json/5
+    * currently autodeployment does not work for mindmaps, maybe you get not_found
+* restart docear instance http://141.45.146.249:8080/job/Restart%20docear%20on%20docear2/build?delay=0sec
+
 ## Get a Map as json
     GET /map/json/{mapId}?[nodeCount]
 
