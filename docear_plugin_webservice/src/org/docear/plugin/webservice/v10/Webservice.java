@@ -47,6 +47,12 @@ public class Webservice {
 	static {
 		openMapUrls = new HashMap<String, URL>();
 	}
+	
+	@GET
+	@Path("status")
+	public Response getStatus() {
+		return Response.ok("Webservice V1.0").build();
+	}
 
 	/**
 	 * returns a map as a JSON-Object

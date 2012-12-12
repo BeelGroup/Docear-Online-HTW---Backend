@@ -2,11 +2,9 @@ package org.docear.plugin.webservice;
 
 import java.awt.Container;
 import java.io.IOException;
-import java.util.Scanner;
 import java.util.logging.Level;
 
 import org.docear.plugin.webservice.v10.Webservice;
-import org.docear.plugin.webservice.v10.WebserviceDeprecated;
 import org.freeplane.core.util.LogUtils;
 import org.freeplane.features.mode.ModeController;
 import org.freeplane.features.ui.INodeViewLifeCycleListener;

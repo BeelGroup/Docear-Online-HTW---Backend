@@ -1,13 +1,9 @@
 package org.docear.plugin.webservice.v10;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.LinkedList;
 
-import javax.ws.rs.core.Response;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -15,10 +11,7 @@ import org.docear.plugin.webservice.WebserviceController;
 import org.docear.plugin.webservice.v10.model.NodeModelBase;
 import org.freeplane.features.mapio.MapIO;
 import org.freeplane.features.mode.ModeController;
-import org.freeplane.n3.nanoxml.XMLException;
 import org.w3c.dom.Document;
-
-import com.sun.jersey.api.client.ClientResponse.Status;
 
 public final class WebserviceHelper {
 
