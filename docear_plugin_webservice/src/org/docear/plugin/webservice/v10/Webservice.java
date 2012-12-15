@@ -35,6 +35,7 @@ import org.freeplane.features.map.MapWriter;
 import org.freeplane.features.map.NodeChangeEvent;
 import org.freeplane.features.map.NodeModel;
 import org.freeplane.features.mapio.MapIO;
+import org.freeplane.features.mapio.mindmapmode.MMapIO;
 import org.freeplane.features.mode.ModeController;
 
 import com.sun.jersey.api.client.ClientResponse.Status;
@@ -51,7 +52,7 @@ public class Webservice {
 	@GET
 	@Path("status")
 	public Response getStatus() {
-		return Response.ok("Webservice V1.0").build();
+		return Response.ok("Webservice V0.01").build();
 	}
 
 	/**
@@ -178,7 +179,8 @@ public class Webservice {
 			
 			//open map
 			ModeController modeController = getModeController();
-			MapIO mio = modeController.getExtension(MapIO.class);
+
+			MMapIO mio = (MMapIO)modeController.getExtension(MapIO.class);
 			mio.newMap(pathURL);
 		} catch (Exception e) {
 			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build();
