@@ -74,7 +74,15 @@ public class Webservice {
 
 		try {
 			if(!WebserviceHelper.selectMap(id)) {
-				return Response.status(Status.NOT_FOUND).entity("Map not found").build();
+				if(id.startsWith("test_")) { //FOR DEBUGING
+					openTestMap(id);
+					if(!WebserviceHelper.selectMap(id)) {
+						return Response.status(Status.NOT_FOUND).entity("Map not found!\n"+
+										"Available test map ids: 'test_1','test_2','test_3','test_4','test_5'").build();
+					}
+				} else {
+					return Response.status(Status.NOT_FOUND).entity("Map not found").build();
+				}
 			}
 		} catch(Exception e) {
 			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build();
@@ -94,6 +102,37 @@ public class Webservice {
 		}
 
 		return Response.ok(mm).build();
+	}
+	
+	private void openTestMap(String id) {
+		try {
+			//create file
+			Random ran = new Random();
+			String filename = ""+System.currentTimeMillis()+ran.nextInt(100);
+			File file = File.createTempFile(filename, ".mm");
+			file.deleteOnExit();
+
+			InputStream in = this.getClass().getResourceAsStream("/mindmaps/"+id+".mm");
+			//fill file from inputstream
+			FileOutputStream out = new FileOutputStream(file);
+			byte[] buffer = new byte[1024];
+			int length;
+			while((length = in.read(buffer, 0, buffer.length)) != -1) {
+				out.write(buffer, 0, length);
+			}
+			out.flush();
+			out.close();
+
+			//put map in openMap Collection
+			URL pathURL = file.toURI().toURL();
+			openMapUrls.put(id, pathURL);
+			
+			//open map
+			ModeController modeController = getModeController();
+
+			MMapIO mio = (MMapIO)modeController.getExtension(MapIO.class);
+			mio.newMap(pathURL);
+		} catch (Exception e) {}
 	}
 
 	/**
