@@ -1,5 +1,5 @@
 <ivy-module version="2.0">
-    <info organisation="org.apache" module="hello-ivy"/>
+    <info organisation="org.docear" module="webservice"/>
     <dependencies>
         <dependency org="com.sun.jersey" name="jersey-bundle" rev="1.16">
           <exclude module="org.eclipse.persistence.moxy"/>
