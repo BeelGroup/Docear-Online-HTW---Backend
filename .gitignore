@@ -38,3 +38,5 @@ freeplane_plugin_workspace
 freeplane_uitest
 Jabref_Beta_2_7_Docear
 JOrtho_0.4_freeplane
+/docear_plugin_webservice/nbproject/private/
+/docear_plugin_webservice_tests/nbproject/private/
