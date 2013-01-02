@@ -3,7 +3,7 @@
 	<property name="src" value="src" />
 	<property name="resources" value="resources" />
 	<property name="root" value="."/>
-	<property name="osgimanifest" value="${root}/META-INF/MANIFEST.MF" />	
+	<property name="osgimanifest" value="${root}/META-INF/MANIFEST.MF" />
 	<property file="${workspace}/freeplane_framework/ant/ant.properties" />
 	<property file="${workspace}/freeplane/ant/ant.properties" />
 	<property file="ant/ant.properties" />
@@ -35,7 +35,7 @@
     </target>
 
 
-    <target name="build" depends="resolve">
+    <target name="build" depends="lib_fileset">
 		<mkdir dir="${build}" />
 		<javac srcdir="${src}" destdir="${build}" debug="${debug}"
 			source="${java_source_version}" target="${java_target_version}" encoding="utf8">
@@ -48,6 +48,20 @@
 		</javac>
 	</target>
 
+
+    <target name="lib_fileset" depends="resolve">
+        <fileset id="resolved_jars" dir="lib">
+            <include name="*.jar" />
+        </fileset>
+        <pathconvert pathsep=",${line.separator} " property="resolved.jars.path" refid="resolved_jars">
+            <map from="${basedir}/" to=""/>
+        </pathconvert>
+        <copy tofile="${basedir}/META-INF/MANIFEST.MF" file="${basedir}/META-INF/MANIFEST.MF.template">
+            <filterset>
+                <filter token="DEPENDENCY_JARS" value="${resolved.jars.path}"/>
+            </filterset>
+        </copy>
+    </target>
 
 	<target name="dist" depends="build">
 		<jar jarfile="lib/plugin.jar">
@@ -68,17 +82,7 @@
 		</copy>
 		<mkdir dir="${dist.osgi.dir}/META-INF" />
 
-        <fileset id="resolved_jars" dir="lib">
-            <include name="*.jar" />
-        </fileset>
-        <pathconvert pathsep=",${line.separator} " property="resolved.jars.path" refid="resolved_jars">
-            <map from="${basedir}/" to=""/>
-        </pathconvert>
-
 		<copy tofile="${dist.osgi.dir}/META-INF/MANIFEST.MF" file="${osgimanifest}">
-            <filterset>
-                <filter token="DEPENDENCY_JARS" value="${resolved.jars.path}"/>
-            </filterset>
 		</copy>
 		<delete file="lib/plugin.jar" quiet="true"/>
 	</target>
