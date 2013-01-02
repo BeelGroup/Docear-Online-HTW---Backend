@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.freeplane.features.icon.MindIcon;
+import org.freeplane.features.link.NodeLinks;
 import org.freeplane.features.map.NodeModel;
 
 @XmlTransient
@@ -21,12 +22,12 @@ abstract public class NodeModelBase {
 	public final String[] icons;
 	public final ImageModel image;
 	public final String link;
-	
+
 	//@XmlTransient
 	//protected final NodeModel freeplaneNode;
 	@XmlElement
 	protected List<String> childrenIds;
-	
+
 	/**
 	 * necessary for JAX-B
 	 */
@@ -40,9 +41,9 @@ abstract public class NodeModelBase {
 		link = null;
 		//freeplaneNode = null;
 	}
-	
+
 	public NodeModelBase(org.freeplane.features.map.NodeModel freeplaneNode, boolean autoloadChildren) {
-		
+
 		this.id = freeplaneNode.getID();
 		this.nodeText = freeplaneNode.getText();
 		this.isHtml = freeplaneNode.getXmlText() != null;
@@ -50,12 +51,14 @@ abstract public class NodeModelBase {
 		this.icons = getIconArray(freeplaneNode);
 		this.image = getImage(freeplaneNode);
 		//this.freeplaneNode = freeplaneNode;
-		
-		this.link = null; //TODO: Where is the link hidden? Might be an Extension. (JS)
-		
-		
+
+		//get link
+		NodeLinks nl = freeplaneNode.getExtension(NodeLinks.class);
+
+		this.link = nl != null ? nl.getHyperLink().toString() : null;
+
 		saveChildrenIds(freeplaneNode);
-		
+
 		if(autoloadChildren) { //load children models
 			loadChildren(true);
 		}
@@ -69,29 +72,29 @@ abstract public class NodeModelBase {
 		}
 		return iconNames;
 	}
-	
+
 	private ImageModel getImage(org.freeplane.features.map.NodeModel freeplaneNode) {
 		// TODO: implement; Where is the Image hidden? (JS) 
 		return null;
 	}
-	
+
 	/**
 	 * stores nodeIds
 	 * @param freeplaneNode
 	 */
 	protected void saveChildrenIds(NodeModel freeplaneNode) {
 		childrenIds = new ArrayList<String>();
-		
+
 		for(NodeModel node : freeplaneNode.getChildren()) {
 			childrenIds.add(node.getID());
 		}
 	}
-	
+
 	/**
 	 * loads the children into the model
 	 * @return number of children that have been added
 	 */
 	public abstract int loadChildren(boolean autoloadChildren);
-	
+
 	public abstract List<DefaultNodeModel> getAllChildren();
 }
