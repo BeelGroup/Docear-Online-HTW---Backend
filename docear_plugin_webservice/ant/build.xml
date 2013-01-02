@@ -1,4 +1,4 @@
-<project name="docear_webservice" default="dist" basedir="..">
+<project name="docear_webservice" default="dist" basedir=".." xmlns:ivy="antlib:org.apache.ivy.ant" >
 	<property name="workspace" location=".." />
 	<property name="src" value="src" />
 	<property name="resources" value="resources" />
@@ -7,9 +7,8 @@
 	<property file="${workspace}/freeplane_framework/ant/ant.properties" />
 	<property file="${workspace}/freeplane/ant/ant.properties" />
 	<property file="ant/ant.properties" />
-	<property name="external.jars" value="${atmosphere.jars}:${jersey-bundle.jar}:${jsr311-api.jar}" />
 	<property name="build" value="${root}/build" />
-	<property name="build" value="${root}/build" />
+	<property name="lib" value="${root}/lib" />
 	<property name="dist" value="${root}/dist" />
 	<property name="dist.osgi.dir" value="${dist}/org.docear.plugin.webservice" />
 	<property name="freeplaneplugin.jar" value="${dist}/org.docear.plugin.webservice.jar"/>
@@ -17,12 +16,35 @@
 	<property name="java_source_version" value="1.5" />
 	<property name="java_target_version" value="1.5" />
 	<property name="build.compiler" value="modern" />
-	<property name="classpath" value="${framework.jar}:${freeplane.jars}:${external.jars}:${services.jar}:${core.jar}:${workspace.jar}:${dependencies.jars}:${atmosphere.jars}:${jersey-bundle.jar}:${jsr311-api.jar}:${jersey-multipart.jar}"/>
+	<property name="classpath" value="${framework.jar}:${freeplane.jars}:${services.jar}:${core.jar}:${workspace.jar}:${dependencies.jars}:${webservice-libs}"/>
+    <property name="ivy.jar.dir" value="${basedir}/ivy" />
+    <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
+    <property name="build.dir" value="build" />
+    <property name="src.dir" value="src" />
 
-	<target name="build">
+    <target name="install-ivy" description="adds ivy ant module to ant">
+        <path id="ivy.lib.path">
+            <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+        </path>
+        <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
+    </target>
+
+
+    <target name="resolve" description="retrieve dependencies with ivy" depends="install-ivy">
+        <ivy:retrieve />
+    </target>
+
+
+    <target name="build" depends="resolve">
 		<mkdir dir="${build}" />
-		<javac srcdir="${src}" destdir="${build}" classpath="${classpath}" debug="${debug}" 
+		<javac srcdir="${src}" destdir="${build}" debug="${debug}"
 			source="${java_source_version}" target="${java_target_version}" encoding="utf8">
+            <classpath>
+                <fileset dir="lib">
+                    <include name="**/*.jar" />
+                </fileset>
+                <pathelement path="${classpath}/"/>
+            </classpath>
 		</javac>
 	</target>
 
@@ -45,7 +67,19 @@
 			</fileset>
 		</copy>
 		<mkdir dir="${dist.osgi.dir}/META-INF" />
-		<copy tofile="${dist.osgi.dir}/META-INF/MANIFEST.MF" file="${osgimanifest}"/>
+
+        <fileset id="resolved_jars" dir="lib">
+            <include name="*.jar" />
+        </fileset>
+        <pathconvert pathsep=",${line.separator} " property="resolved.jars.path" refid="resolved_jars">
+            <map from="${basedir}/" to=""/>
+        </pathconvert>
+
+		<copy tofile="${dist.osgi.dir}/META-INF/MANIFEST.MF" file="${osgimanifest}">
+            <filterset>
+                <filter token="DEPENDENCY_JARS" value="${resolved.jars.path}"/>
+            </filterset>
+		</copy>
 		<delete file="lib/plugin.jar" quiet="true"/>
 	</target>
 
@@ -60,6 +94,7 @@
 	<target name="clean">
 		<delete dir="${build}"  quiet="true"/>
 		<delete dir="${dist}"  quiet="true"/>
+		<delete dir="${lib}"  quiet="true"/>
 		<delete>
 			<fileset defaultexcludes="no" dir="${src}" includes="**/*~"/>
 		</delete>
