@@ -42,3 +42,7 @@ docear_plugin_webservice/nbproject/private/
 docear_plugin_webservice_tests/nbproject/private/
 docear_plugin_webservice/lib/
 docear_plugin_webservice/META-INF/MANIFEST.MF
+freeplane_plugin_webservice/nbproject/private/
+freeplane_plugin_webservice_tests/nbproject/private/
+freeplane_plugin_webservice/lib/
+freeplane_plugin_webservice/META-INF/MANIFEST.MF
