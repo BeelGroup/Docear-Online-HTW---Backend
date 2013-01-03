@@ -1,5 +1,6 @@
 package org.docear.plugin.webservice.v10.model;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,8 +56,6 @@ abstract public class NodeModelBase {
 		//get link
 		URI uri = NodeLinks.getValidLink(freeplaneNode);
 		this.link = uri != null ? uri.toString() : null;
-
-		this.link = nl != null ? nl.getHyperLink().toString() : null;
 
 		saveChildrenIds(freeplaneNode);
 
