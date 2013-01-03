@@ -53,7 +53,8 @@ abstract public class NodeModelBase {
 		//this.freeplaneNode = freeplaneNode;
 
 		//get link
-		NodeLinks nl = freeplaneNode.getExtension(NodeLinks.class);
+		URI uri = NodeLinks.getValidLink(freeplaneNode);
+		this.link = uri != null ? uri.toString() : null;
 
 		this.link = nl != null ? nl.getHyperLink().toString() : null;
 
